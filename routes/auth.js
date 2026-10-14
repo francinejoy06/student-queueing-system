@@ -47,9 +47,21 @@ router.post('/register', async (req, res, next) => {
     }
 
     const hash = await bcrypt.hash(password, 10);
-    // Role is ALWAYS 'student' here. Never take the role from the form.
-    await userModel.create(fullName, email, hash, 'student');
-    res.redirect('/login?registered=1');
+        // Role is ALWAYS 'student' here. Never take the role from the form.
+    try {
+      await userModel.create(fullName, email, hash, 'student');
+    } catch (err) {
+      if (err.code === 'ER_DUP_ENTRY') {
+        return res.status(400).render('register', {
+          errors: ['That email is already registered.'],
+          old: { full_name: fullName, email }
+        });
+      }
+
+      return next(err);
+    }
+
+    return res.redirect('/login?registered=1');
   } catch (err) {
     next(err);
   }
