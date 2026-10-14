@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff Queue Panel</title>
+</head>
+<body>
+  <h1>Staff Queue Panel</h1>
+
+  <form method="GET" action="/staff/queue">
+    <label for="office">Office:</label>
+    <select name="office" id="office" onchange="this.form.submit()">
+      <% offices.forEach(function (o) { %>
+        <option value="<%= o.id %>" <%= o.id === office.id ? 'selected' : '' %>><%= o.name %></option>
+      <% }); %>
+    </select>
+  </form>
+
+  <% if (message) { %>
+    <p><strong><%= message %></strong></p>
+  <% } %>
+
+  <h2>Now serving</h2>
+  <% if (serving) { %>
+    <p><%= serving.ticket_number %> - <%= serving.full_name %> (<%= serving.purpose || 'No purpose given' %>)</p>
+    <form method="POST" action="/staff/queue/finish" style="display:inline">
+      <input type="hidden" name="officeId" value="<%= office.id %>">
+      <input type="hidden" name="ticketId" value="<%= serving.id %>">
+      <button type="submit" name="status" value="completed">Complete</button>
+      <button type="submit" name="status" value="skipped">Skip</button>
+    </form>
+  <% } else { %>
+    <p>No ticket is being served.</p>
+  <% } %>
+
+  <h2>Waiting (<%= waiting.length %>)</h2>
+  <form method="POST" action="/staff/queue/call-next">
+    <input type="hidden" name="officeId" value="<%= office.id %>">
+    <button type="submit">Call next</button>
+  </form>
+
+  <% if (waiting.length === 0) { %>
+    <p>No waiting tickets.</p>
+  <% } else { %>
+    <ol>
+      <% waiting.forEach(function (t) { %>
+        <li><%= t.ticket_number %> - <%= t.full_name %> (<%= t.purpose || 'No purpose given' %>)</li>
+      <% }); %>
+    </ol>
+  <% } %>
+</body>
+</html>
