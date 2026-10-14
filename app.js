@@ -26,6 +26,10 @@ app.get('/', (req, res) => {
   res.send('Student Queueing System is running!');
 });
 
+// Admin routes
+const adminRoutes = require('./routes/adminRoutes');
+app.use('/admin', adminRoutes);
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

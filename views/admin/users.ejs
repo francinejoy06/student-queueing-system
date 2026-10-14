@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manage Users</title>
+</head>
+<body>
+  <h1>Manage Users</h1>
+  <p><a href="/admin/offices">Offices</a> | <a href="/admin/users">Users</a></p>
+
+  <% if (message) { %><p><strong><%= message %></strong></p><% } %>
+
+  <h2>Add user</h2>
+  <form method="POST" action="/admin/users">
+    <input type="text" name="full_name" maxlength="100" placeholder="Full name" required>
+    <input type="email" name="email" maxlength="100" placeholder="Email" required>
+    <input type="password" name="password" minlength="8" placeholder="Password (min 8)" required>
+    <select name="role">
+      <% roles.forEach(function (r) { %><option value="<%= r %>"><%= r %></option><% }); %>
+    </select>
+    <button type="submit">Add</button>
+  </form>
+
+  <h2>All users</h2>
+  <table border="1" cellpadding="6">
+    <tr><th>Name / Role</th><th>Email</th><th>Delete</th></tr>
+    <% users.forEach(function (u) { %>
+      <tr>
+        <td>
+          <form method="POST" action="/admin/users/<%= u.id %>/edit" style="display:inline">
+            <input type="text" name="full_name" value="<%= u.full_name %>" maxlength="100" required>
+            <select name="role">
+              <% roles.forEach(function (r) { %>
+                <option value="<%= r %>" <%= r === u.role ? 'selected' : '' %>><%= r %></option>
+              <% }); %>
+            </select>
+            <button type="submit">Save</button>
+          </form>
+        </td>
+        <td><%= u.email %></td>
+        <td>
+          <form method="POST" action="/admin/users/<%= u.id %>/delete" style="display:inline"
+                onsubmit="return confirm('Delete this user?')">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    <% }); %>
+  </table>
+</body>
+</html>
