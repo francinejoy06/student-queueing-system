@@ -14,7 +14,7 @@
 | Staff | staff@school.edu | Staff123! |
 | Student | student@school.edu | Student123! |
 
-Accounts are created by `npm run seed` (`scripts/seed.js`).
+Accounts are created by `node scripts/seed.js` (`scripts/seed.js`).
 
 ---
 
@@ -45,6 +45,7 @@ Accounts are created by `npm run seed` (`scripts/seed.js`).
 | FORM-08 | Invalid office value | Edit the form (browser dev tools) to send a non-existent office ID | Server rejects it with an error message | |
 | FORM-09 | SQL injection attempt | Enter `' OR '1'='1` in the login email field | Login fails normally; no error leak or bypass | |
 | FORM-10 | HTML/script input | Enter `<script>alert(1)</script>` in the purpose field | Text displayed escaped; no script runs | |
+| FORM-11 | Role escalation at registration | Register normally, but add a field `role=admin` to the request (browser dev tools, or a POST tool) | Account is created as `student`; the role field is ignored | |
 
 ## 3. Database (CRUD)
 
@@ -57,6 +58,8 @@ Accounts are created by `npm run seed` (`scripts/seed.js`).
 | DB-05 | Persistence on refresh | Create a ticket, refresh the page | Ticket is still there | |
 | DB-06 | Persistence on restart | Stop the server, run `node app.js` again | All users and tickets still exist | |
 | DB-07 | Foreign keys | Try to create a ticket for a non-existent student or office | Database/server rejects it | |
+| DB-08 | Invalid status transitions | As staff, try to move a `completed` or `cancelled` ticket back to `waiting` or `serving`; as a student, send a POST that sets a ticket to `completed` | Rejected with an error; `status` in `queue_tickets` is unchanged. Allowed flow: waiting, serving, completed (or skipped/cancelled) | |
+| DB-09 | Ticket number sequencing | Create several tickets for the same office, then two at nearly the same time in two browser tabs | Ticket numbers are unique and increase in order; no duplicates | |
 
 ## 4. Access Control (test every role)
 
@@ -74,12 +77,17 @@ Accounts are created by `npm run seed` (`scripts/seed.js`).
 
 ## 5. Security Checks
 
-| ID | Test case | Expected result | Result |
-|---|---|---|---|
-| SEC-01 | `.env` is not in the GitHub repository | Not listed in the repo | |
-| SEC-02 | `.env.example` contains no real passwords | Only placeholder values | |
-| SEC-03 | `node_modules/` is not in the repository | Not listed in the repo | |
-| SEC-04 | Session cookie is `httpOnly` | Cookie cannot be read by JavaScript | |
+| ID | Test case | Steps | Expected result | Result |
+|---|---|---|---|---|
+| SEC-01 | `.env` is not in the GitHub repository | Browse the repository files | Not listed in the repo | |
+| SEC-02 | `.env.example` contains no real passwords | Open `.env.example` on GitHub | Only placeholder values | |
+| SEC-03 | `node_modules/` is not in the repository | Browse the repository files | Not listed in the repo | |
+| SEC-04 | Session cookie is `httpOnly` | Check the session cookie in browser dev tools (Application tab) | Cookie has HttpOnly ticked, so JavaScript cannot read it | |
+| SEC-05 | No secrets in Git history | Run `git log --all --oneline -- .env` and `git log --all -p -- .env.example` | First command prints nothing; second shows only placeholder values. No real passwords or secrets in any commit | |
+
+## 6. Scope Notes (not tested in Round 1)
+
+- **Office-scoped staff access:** In the current schema (`users` table) staff accounts are not linked to a specific office, so any staff member can manage any office's queue. This is listed as a known limitation and would require a `users.office_id` column plus a check in the queue routes. If the team adds it, add a test: staff from Office A cannot call, complete or skip tickets of Office B.
 
 ---
 
