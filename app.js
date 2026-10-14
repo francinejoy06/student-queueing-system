@@ -26,6 +26,10 @@ app.get('/', (req, res) => {
   res.send('Student Queueing System is running!');
 });
 
+// Routes
+const staffRoutes = require('./routes/staffRoutes');
+app.use('/staff', staffRoutes);
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
