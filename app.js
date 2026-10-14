@@ -22,6 +22,8 @@ app.use(
 );
 
 // Test route
+app.use('/', require('./routes/auth'));
+
 app.get('/', (req, res) => {
   res.send('Student Queueing System is running!');
 });
