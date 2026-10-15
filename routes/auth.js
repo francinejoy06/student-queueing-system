@@ -8,9 +8,9 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Where each role lands after login (change if your team uses other URLs)
 const HOME_BY_ROLE = {
-  student: '/dashboard',
-  staff: '/dashboard',
-  admin: '/dashboard'
+  student: '/',
+  staff: '/staff/queue',
+  admin: '/admin/offices'
 };
 
 // ---------- REGISTER ----------
