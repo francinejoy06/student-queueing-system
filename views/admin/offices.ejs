@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manage Offices</title>
+</head>
+<body>
+  <h1>Manage Offices</h1>
+  <p><a href="/admin/offices">Offices</a> | <a href="/admin/users">Users</a></p>
+
+  <% if (message) { %><p><strong><%= message %></strong></p><% } %>
+
+  <h2>Add office</h2>
+  <form method="POST" action="/admin/offices">
+    <input type="text" name="name" maxlength="100" placeholder="Office name" required>
+    <button type="submit">Add</button>
+  </form>
+
+  <h2>All offices</h2>
+  <table border="1" cellpadding="6">
+    <tr><th>Name</th><th>Status</th><th>Actions</th></tr>
+    <% offices.forEach(function (o) { %>
+      <tr>
+        <td>
+          <form method="POST" action="/admin/offices/<%= o.id %>/edit" style="display:inline">
+            <input type="text" name="name" value="<%= o.name %>" maxlength="100" required>
+            <button type="submit">Save</button>
+          </form>
+        </td>
+        <td><%= o.is_active ? 'Active' : 'Inactive' %></td>
+        <td>
+          <form method="POST" action="/admin/offices/<%= o.id %>/toggle" style="display:inline">
+            <input type="hidden" name="active" value="<%= o.is_active ? '0' : '1' %>">
+            <button type="submit"><%= o.is_active ? 'Deactivate' : 'Activate' %></button>
+          </form>
+        </td>
+      </tr>
+    <% }); %>
+  </table>
+</body>
+</html>

@@ -26,6 +26,10 @@ app.get('/', (req, res) => {
   res.send('Student Queueing System is running!');
 });
 
+// Admin routes
+const adminRoutes = require('./routes/adminRoutes');
+app.use('/admin', adminRoutes);
+
 // Routes
 const staffRoutes = require('./routes/staffRoutes');
 app.use('/staff', staffRoutes);
