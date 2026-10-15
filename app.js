@@ -35,10 +35,6 @@ app.get('/', (req, res) => {
 const adminRoutes = require('./routes/adminRoutes');
 app.use('/admin', adminRoutes);
 
-// Routes
-const staffRoutes = require('./routes/staffRoutes');
-app.use('/staff', staffRoutes);
-
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

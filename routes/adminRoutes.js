@@ -1,6 +1,11 @@
+
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
+const { requireRole } = require('../middleware/auth');
+
+// Only admin users can access these routes
+router.use(requireRole('admin'));
 
 router.get('/offices', adminController.showOffices);
 router.post('/offices', adminController.addOffice);
