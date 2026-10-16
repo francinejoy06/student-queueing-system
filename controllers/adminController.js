@@ -1,6 +1,89 @@
 const bcrypt = require('bcryptjs');
+const adminModel = require('../models/adminModel');
 const userModel = require('../models/userModel');
 
+const ROLES = ['student', 'staff', 'admin'];
+
+// ---------- OFFICES ----------
+function officeNameError(name) {
+  if (!name) return 'Office name is required.';
+  if (name.length > 100) return 'Office name must be 100 characters or fewer.';
+  return null;
+}
+
+async function showOffices(req, res) {
+  try {
+    const offices = await adminModel.getOffices();
+    res.render('admin/offices', {
+      offices,
+      currentUser: req.session.user,
+      message: req.query.message || null,
+      error: req.query.error || null,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Could not load offices.');
+  }
+}
+
+async function addOffice(req, res) {
+  const name = String(req.body.name || '').trim();
+  const problem = officeNameError(name);
+  if (problem) return res.redirect(`/admin/offices?error=${encodeURIComponent(problem)}`);
+
+  try {
+    if (await adminModel.officeNameExists(name)) {
+      return res.redirect('/admin/offices?error=Office+name+already+exists');
+    }
+    await adminModel.createOffice(name);
+    res.redirect('/admin/offices?message=Office+added');
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.redirect('/admin/offices?error=Office+name+already+exists');
+    }
+    console.error(err);
+    res.status(500).send('Could not add office.');
+  }
+}
+
+async function editOffice(req, res) {
+  const id = Number.parseInt(req.params.id, 10);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).send('Invalid office.');
+  const name = String(req.body.name || '').trim();
+  const problem = officeNameError(name);
+  if (problem) return res.redirect(`/admin/offices?error=${encodeURIComponent(problem)}`);
+
+  try {
+    if (await adminModel.officeNameExists(name, id)) {
+      return res.redirect('/admin/offices?error=Office+name+already+exists');
+    }
+    await adminModel.renameOffice(id, name);
+    res.redirect('/admin/offices?message=Office+updated');
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.redirect('/admin/offices?error=Office+name+already+exists');
+    }
+    console.error(err);
+    res.status(500).send('Could not update office.');
+  }
+}
+
+// Offices are deactivated, not deleted, so old tickets stay valid
+async function toggleOffice(req, res) {
+  const id = Number.parseInt(req.params.id, 10);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).send('Invalid office.');
+  const active = req.body.active === '1';
+
+  try {
+    await adminModel.setOfficeActive(id, active);
+    res.redirect(`/admin/offices?message=${active ? 'Office+activated' : 'Office+deactivated'}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Could not update office.');
+  }
+}
+
+// ---------- USERS ----------
 async function showUsers(req, res) {
   try {
     const users = await userModel.getAll();
@@ -51,6 +134,29 @@ async function addUser(req, res) {
   }
 }
 
+async function editUser(req, res) {
+  const id = Number.parseInt(req.params.id, 10);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).send('Invalid user.');
+  const fullName = String(req.body.full_name || '').trim();
+  const role = String(req.body.role || '');
+  const isSelf = id === Number(req.session.user.id);
+
+  let problem = null;
+  if (!fullName || fullName.length > 100) problem = 'Name must be between 1 and 100 characters.';
+  else if (!ROLES.includes(role)) problem = 'Choose a valid role.';
+  else if (isSelf && role !== req.session.user.role) problem = 'You cannot change your own role.';
+  if (problem) return res.redirect(`/admin/users?error=${encodeURIComponent(problem)}`);
+
+  try {
+    await adminModel.updateUser(id, fullName, role);
+    if (isSelf) req.session.user.full_name = fullName;
+    res.redirect('/admin/users?message=User+updated');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Could not update user.');
+  }
+}
+
 async function deleteUser(req, res) {
   const id = Number.parseInt(req.params.id, 10);
   if (!Number.isInteger(id) || id < 1) return res.status(400).send('Invalid user.');
@@ -67,4 +173,13 @@ async function deleteUser(req, res) {
   }
 }
 
-module.exports = { showUsers, addUser, deleteUser };
+module.exports = {
+  showOffices,
+  addOffice,
+  editOffice,
+  toggleOffice,
+  showUsers,
+  addUser,
+  editUser,
+  deleteUser,
+};

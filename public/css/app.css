@@ -240,3 +240,19 @@ td:first-child, th:first-child { padding-left: 10px; }
   .login-art { display: none; }
   .login-panel { min-height: 100vh; padding: 30px 22px; }
 }
+
+/* Office management */
+.office-edit { display: flex; gap: 10px; align-items: center; margin: 0; }
+.office-edit input[type="text"] { width: 100%; max-width: 280px; padding: 10px 12px; border: 1px solid #d5dfdf; border-radius: 10px; background: #fff; font: inherit; color: inherit; }
+.office-edit input[type="text"]:focus { outline: 2px solid #0f8a7a; outline-offset: 1px; }
+.office-edit .small-action,
+.office-toggle .small-action { padding: 8px 14px; border: 1px solid #d5dfdf; border-radius: 999px; background: #fff; cursor: pointer; font: inherit; font-weight: 600; }
+.office-edit .small-action { color: #0f7f72; }
+.office-edit .small-action:hover { background: #e8f5f2; }
+.office-toggle { margin: 0; display: inline-block; }
+.office-toggle .danger-text { color: #c0392b; border-color: #f0c9c4; }
+.office-toggle .danger-text:hover { background: #fdeceb; }
+.status-pill { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.status-pill.active { background: #e0f4ef; color: #0b6b5f; }
+.status-pill.inactive { background: #eceff0; color: #5b6770; }
+.office-actions { text-align: right; white-space: nowrap; }
