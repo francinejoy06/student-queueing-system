@@ -1,0 +1,36 @@
+<%- include('../partials/header', { title: 'Offices', active: 'offices', currentUser }) %>
+<% if (message) { %><div class="alert success" role="status"><%= message %></div><% } %>
+<% if (error) { %><div class="alert error" role="alert"><%= error %></div><% } %>
+<section class="admin-intro"><div><h2>Manage offices</h2><p class="muted">Add, rename, or deactivate service offices. Offices are deactivated, not deleted, so old tickets stay valid.</p></div><span class="admin-count"><strong><%= offices.length %></strong> offices</span></section>
+<section class="panel create-user-panel">
+  <div class="panel-heading"><div><h2>Add an office</h2></div><span class="form-badge">＋ NEW OFFICE</span></div>
+  <form method="POST" action="/admin/offices" class="user-create-form">
+    <label>Office name<input type="text" name="name" maxlength="100" placeholder="Office name" required></label>
+    <div class="user-form-submit"><button class="button primary" type="submit">Add office <span>→</span></button></div>
+  </form>
+</section>
+<section class="panel">
+  <div class="panel-heading"><div><h2>All offices</h2></div></div>
+  <% if (offices.length) { %>
+  <div class="table-wrap"><table><thead><tr><th>OFFICE</th><th>STATUS</th><th></th></tr></thead><tbody>
+    <% offices.forEach(function (o) { %>
+<tr>
+  <td>
+    <form method="POST" action="/admin/offices/<%= o.id %>/edit" class="office-edit">
+      <input type="text" name="name" value="<%= o.name %>" maxlength="100" required>
+      <button class="small-action" type="submit">Save</button>
+    </form>
+  </td>
+  <td><span class="status-pill <%= o.is_active ? 'active' : 'inactive' %>"><%= o.is_active ? 'Active' : 'Inactive' %></span></td>
+  <td class="office-actions">
+    <form method="POST" action="/admin/offices/<%= o.id %>/toggle" class="office-toggle">
+      <input type="hidden" name="active" value="<%= o.is_active ? '0' : '1' %>">
+      <button class="small-action <%= o.is_active ? 'danger-text' : '' %>" type="submit"><%= o.is_active ? 'Deactivate' : 'Activate' %></button>
+    </form>
+  </td>
+</tr>
+<% }); %>
+  </tbody></table></div>
+  <% } else { %><div class="empty-state"><strong>No offices yet</strong></div><% } %>
+</section>
+<%- include('../partials/footer') %>

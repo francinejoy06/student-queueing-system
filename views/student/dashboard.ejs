@@ -1,0 +1,15 @@
+<%- include('../partials/header', { title: 'My queue', active: 'student', currentUser }) %>
+<% if (query.created) { %><div class="alert success" role="status">You joined the queue. Your ticket is listed below.</div><% } %>
+<section class="welcome-row">
+  <div><h2>Hello, <%= currentUser.full_name.split(' ')[0] %> 👋</h2><p class="muted">Keep track of your campus service tickets here.</p></div>
+  <a class="button primary" href="/student/queue/add">＋ Join a queue</a>
+</section>
+<section class="panel">
+  <div class="panel-heading"><div><h2>Your tickets</h2><p class="muted">Queue requests made with your account</p></div><span class="admin-count"><strong><%= tickets.filter(function (ticket) { return ['waiting', 'serving'].includes(ticket.status); }).length %></strong> active</span></div>
+  <% if (tickets.length) { %>
+    <div class="table-wrap"><table><thead><tr><th>TICKET</th><th>SERVICE OFFICE</th><th>PURPOSE</th><th>CREATED</th><th>STATUS</th></tr></thead><tbody>
+      <% tickets.forEach(function (ticket) { %><tr><td><strong class="ticket-number"><%= ticket.ticket_number %></strong></td><td><%= ticket.office_name %></td><td><%= ticket.purpose || '—' %></td><td><%= new Date(ticket.created_at).toLocaleString() %></td><td><span class="status <%= ticket.status %>"><%= ticket.status %></span></td></tr><% }); %>
+    </tbody></table></div>
+  <% } else { %><div class="empty-state"><span>◷</span><strong>No tickets yet</strong><p>Join a service queue when you’re ready.</p><a class="button primary" href="/student/queue/add">Join a queue <span>→</span></a></div><% } %>
+</section>
+<%- include('../partials/footer') %>

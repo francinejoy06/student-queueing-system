@@ -1,53 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Staff Queue Panel</title>
-</head>
-<body>
-  <h1>Staff Queue Panel</h1>
-
-  <form method="GET" action="/staff/queue">
-    <label for="office">Office:</label>
-    <select name="office" id="office" onchange="this.form.submit()">
-      <% offices.forEach(function (o) { %>
-        <option value="<%= o.id %>" <%= o.id === office.id ? 'selected' : '' %>><%= o.name %></option>
-      <% }); %>
-    </select>
-  </form>
-
-  <% if (message) { %>
-    <p><strong><%= message %></strong></p>
-  <% } %>
-
-  <h2>Now serving</h2>
-  <% if (serving) { %>
-    <p><%= serving.ticket_number %> - <%= serving.full_name %> (<%= serving.purpose || 'No purpose given' %>)</p>
-    <form method="POST" action="/staff/queue/finish" style="display:inline">
-      <input type="hidden" name="officeId" value="<%= office.id %>">
-      <input type="hidden" name="ticketId" value="<%= serving.id %>">
-      <button type="submit" name="status" value="completed">Complete</button>
-      <button type="submit" name="status" value="skipped">Skip</button>
+<%- include('../partials/header', { title: 'Queue management', active: 'queue', currentUser }) %>
+<% if (message) { %><div class="alert success" role="status"><%= message %></div><% } %>
+<% if (error) { %><div class="alert error" role="alert"><%= error %></div><% } %>
+<section class="queue-overview">
+  <div class="serving-card">
+    <div class="serving-top"><div><span class="eyebrow light">NOW SERVING</span><span class="live-tag"><span class="live-dot"></span> LIVE</span></div><span class="serving-symbol">◎</span></div>
+    <% if (serving) { %>
+      <strong class="serving-number"><%= serving.ticket_number %></strong>
+      <div class="serving-student"><strong><%= serving.full_name %></strong><span><%= serving.purpose || 'General service' %></span></div>
+      <div class="serving-actions">
+        <form method="POST" action="/staff/queue/<%= serving.id %>/served"><button class="button light-button" type="submit">✓ Mark served</button></form>
+        <form method="POST" action="/staff/queue/<%= serving.id %>/skip"><button class="button outline-light" type="submit">Skip ticket</button></form>
+      </div>
+    <% } else { %>
+      <strong class="serving-number empty-number">— — —</strong><p class="serving-empty">No student is being served right now.</p>
+    <% } %>
+    <div class="serving-footer"><span>Service office</span><strong><%= office.name %></strong></div>
+  </div>
+  <div class="waiting-card">
+    <div class="panel-heading compact"><div><span class="eyebrow">UP NEXT</span><h2><%= waiting.length %> waiting</h2></div><span class="waiting-icon">◷</span></div>
+    <% if (waiting.length) { %><div class="next-ticket">
+      <span class="ticket-next-number"><%= waiting[0].ticket_number %></span>
+      <div><strong><%= waiting[0].full_name %></strong><small><%= waiting[0].purpose || 'General service' %></small></div>
+      <span class="next-badge">NEXT</span>
+    </div><% } else { %><div class="empty-inline">There are no tickets waiting.</div><% } %>
+    <form method="POST" action="/staff/queue/call-next">
+      <input type="hidden" name="office_id" value="<%= office.id %>">
+      <button class="button primary wide call-button" type="submit" <%= waiting.length === 0 || serving ? 'disabled' : '' %>>Call next student <span>→</span></button>
     </form>
-  <% } else { %>
-    <p>No ticket is being served.</p>
-  <% } %>
-
-  <h2>Waiting (<%= waiting.length %>)</h2>
-  <form method="POST" action="/staff/queue/call-next">
-    <input type="hidden" name="officeId" value="<%= office.id %>">
-    <button type="submit">Call next</button>
+    <p class="helper-text">Calling a ticket will move it to the serving counter.</p>
+  </div>
+</section>
+<section class="panel queue-table-panel">
+  <div class="panel-heading"><div><h2>All tickets</h2><p class="muted">Search and manage tickets for this office</p></div><a class="button primary" href="/staff/queue/add">＋ Add ticket</a></div>
+  <form class="filters" method="GET" action="/staff/queue">
+    <label class="select-wrap"><span class="sr-only">Service office</span><select name="office" onchange="this.form.submit()"><% offices.forEach(function (o) { %><option value="<%= o.id %>" <%= o.id === office.id ? 'selected' : '' %>><%= o.name %></option><% }); %></select></label>
+    <label class="search-wrap"><span class="search-icon">⌕</span><input type="search" name="q" value="<%= query %>" placeholder="Search ticket, student, purpose"></label>
+    <label class="select-wrap"><span class="sr-only">Ticket status</span><select name="status"><option value="">All statuses</option><% ['waiting', 'serving', 'completed', 'skipped', 'cancelled'].forEach(function (s) { %><option value="<%= s %>" <%= status === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option><% }); %></select></label>
+    <button class="button secondary" type="submit">Filter</button>
   </form>
-
-  <% if (waiting.length === 0) { %>
-    <p>No waiting tickets.</p>
-  <% } else { %>
-    <ol>
-      <% waiting.forEach(function (t) { %>
-        <li><%= t.ticket_number %> - <%= t.full_name %> (<%= t.purpose || 'No purpose given' %>)</li>
+  <% if (tickets.length) { %>
+    <div class="table-wrap"><table><thead><tr><th>TICKET</th><th>STUDENT</th><th>PURPOSE</th><th>STATUS</th><th>CREATED</th><th class="actions-heading">ACTIONS</th></tr></thead><tbody>
+      <% tickets.forEach(function (ticket) { %>
+        <tr><td><strong class="ticket-number"><%= ticket.ticket_number %></strong></td><td><%= ticket.full_name %></td><td><%= ticket.purpose || '—' %></td><td><span class="status <%= ticket.status %>"><%= ticket.status %></span></td><td><%= new Date(ticket.created_at).toLocaleString() %></td><td class="row-actions">
+          <% if (ticket.status === 'waiting') { %><a class="small-action" href="/staff/queue/<%= ticket.id %>/edit">Edit</a><% } %>
+          <% if (['waiting', 'skipped', 'cancelled'].includes(ticket.status)) { %><form method="POST" action="/staff/queue/<%= ticket.id %>/delete" onsubmit="return confirm('Delete this ticket?')"><button class="small-action danger-text" type="submit">Delete</button></form><% } %>
+          <% if (ticket.status === 'serving') { %><form method="POST" action="/staff/queue/<%= ticket.id %>/served"><button class="small-action" type="submit">Serve</button></form><form method="POST" action="/staff/queue/<%= ticket.id %>/skip"><button class="small-action danger-text" type="submit">Skip</button></form><% } %>
+        </td></tr>
       <% }); %>
-    </ol>
-  <% } %>
-</body>
-</html>
+    </tbody></table></div>
+  <% } else { %><div class="empty-state"><span>⌕</span><strong>No tickets found</strong><p>Try changing your search or filters.</p></div><% } %>
+</section>
+<%- include('../partials/footer') %>
