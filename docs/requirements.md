@@ -1,127 +1,178 @@
-# Student Queueing System Requirements
+# Requirements Document: Student Queueing System
 
-## 1. Purpose and scope
+## 1. Purpose and Scope
+The Student Queueing System is a web application that replaces physical lines at campus offices with a digital queue. Students request service at an office and track their tickets. Staff view and process the queue of an office. Administrators manage user accounts and offices.
 
-The Student Queueing System provides a web application for students to request service at a campus office and track their queue tickets. Staff use the system to view and process office queues. Administrators manage staff and administrator accounts.
+The application uses Node.js, Express, EJS, and MySQL. Users, offices, and queue tickets are stored in the `users`, `offices`, and `queue_tickets` tables.
 
-The current application uses Node.js, Express, EJS, and MySQL. Queue records are stored in the `queue_tickets` table, and service locations are stored as active offices in the `offices` table.
+## 2. Users
 
-## 2. Users and stakeholders
-
-| User or stakeholder | Description | Main interests |
+| User | Description | Main needs |
 |---|---|---|
-| Student | Creates an account, requests service, and views their own tickets | Know which office they joined and their ticket status |
-| Staff | Processes tickets for campus service offices | See waiting tickets, call the next student, and complete or skip service |
-| Administrator | Manages staff and administrator accounts | Maintain authorized system access |
-| Campus service offices | Registrar, Cashier, Guidance Office, Library, and other configured offices | Keep service queues organized |
-| Campus administrators | Own the queueing workflow and system policy | Reliable records, role separation, and understandable operations |
+| Student | A registered student who needs service from a campus office | Create an account, request a ticket for an office, view their own tickets and status |
+| Staff | An employee who processes tickets for campus offices | See the queue of an office, call the next student, complete or skip a ticket, add and manage tickets |
+| Administrator | A system administrator | Manage staff and administrator accounts and manage offices |
 
-## 3. Functional requirements
+## 3. Stakeholders
+
+| Stakeholder | Interest in the system |
+|---|---|
+| Campus offices (Registrar, Cashier, Guidance Office, Library, and other configured offices) | Shorter lines and organized service queues |
+| School administration | Reliable records, role separation, and better service quality |
+| IT / system maintainers | A secure, documented system that is easy to maintain |
+| Students (as a whole) | Less waiting time and a clear service order |
+
+## 4. Functional Requirements
 
 ### Accounts and access
-
-- **FR-01 — Student registration:** A visitor can create a student account using a name, email, and password. The server assigns the `student` role; a submitted role value must not grant privileges.
-- **FR-02 — Input validation:** Forms validate required fields, email format, field lengths, password confirmation, valid roles, and duplicate email addresses. Invalid submissions receive a useful error.
-- **FR-03 — Sign in and sign out:** Registered users can sign in with email and password and sign out to destroy their session.
-- **FR-04 — Role-based access:** Students can access only student pages, staff and administrators can access staff queue pages, and only administrators can access user management.
-- **FR-05 — Account administration:** An administrator can create staff or administrator accounts and delete another account. An administrator cannot delete their own currently signed-in account.
+- **FR-01 Student registration:** A visitor can create a student account with a name, email, and password. The server assigns the `student` role; a submitted role value must not grant privileges.
+- **FR-02 Input validation:** Forms validate required fields, email format, field lengths, password confirmation, valid roles, and duplicate email addresses, and show a useful error message.
+- **FR-03 Sign in and sign out:** Registered users can sign in with email and password and sign out, which destroys their session.
+- **FR-04 Role-based access:** Students can access only student pages, staff and administrators can access the staff queue pages, and only administrators can access user and office management. Restricted pages cannot be opened by typing the URL.
 
 ### Student queue requests
-
-- **FR-06 — Request a ticket:** A signed-in student can select an active office and optionally enter a service purpose of up to 255 characters.
-- **FR-07 — Ticket number:** A valid request is stored and assigned a unique queue ticket number.
-- **FR-08 — View tickets:** A student can view their own tickets, including ticket number, office, purpose, creation time, and status. A student must not see another student's tickets.
+- **FR-05 Request a ticket:** A signed-in student can select an active office and optionally enter a purpose of up to 255 characters.
+- **FR-06 Ticket number and status:** A valid request is saved with a unique ticket number and the status "waiting".
+- **FR-07 View tickets:** A student can view their own tickets (number, office, purpose, time, status) and cannot see another student's tickets.
 
 ### Staff queue operations
+- **FR-08 Dashboard:** Staff can view daily waiting, serving, completed, and total ticket counts and recent queue activity.
+- **FR-09 Queue list:** Staff can view the tickets of an office and filter them by search text and status.
+- **FR-10 Call next:** Staff can call the oldest waiting ticket of a selected office when no ticket is currently being served there.
+- **FR-11 Complete or skip:** Staff can mark the serving ticket as completed or skipped. A ticket that is not serving cannot be completed or skipped.
+- **FR-12 Add, edit, and delete tickets:** Staff can create or edit waiting tickets and delete tickets only in the waiting, skipped, or cancelled states.
 
-- **FR-09 — Dashboard:** Staff can view daily waiting, serving, completed, and total ticket counts plus recent queue activity.
-- **FR-10 — Queue list:** Staff can view tickets for an office and filter the list by search text and status.
-- **FR-11 — Call next:** Staff can call the oldest waiting ticket for a selected office when no ticket is currently being served there.
-- **FR-12 — Serve or skip:** Staff can mark the current serving ticket completed or skipped. A ticket that is not serving cannot be completed or skipped through these actions.
-- **FR-13 — Add, edit, and delete tickets:** Staff can create or edit waiting queue tickets and delete tickets only in the permitted waiting, skipped, or cancelled states.
+### Administration
+- **FR-13 Account administration:** An administrator can create staff or administrator accounts, edit a user's name and role, and delete another account. An administrator cannot delete their own account or change their own role.
+- **FR-14 Office management:** An administrator can add, rename, activate, and deactivate offices. Duplicate office names are rejected. Offices are deactivated, not deleted, so existing tickets remain valid.
 
-## 4. Non-functional requirements
+## 5. Non-Functional Requirements
 
-- **NFR-01 — Security:** Store passwords as bcrypt hashes, use parameterized SQL queries, escape rendered user-provided text, and protect session cookies with `HttpOnly` and `SameSite`.
-- **NFR-02 — Data integrity:** Enforce database foreign keys between tickets, students, and offices. Do not create a ticket for an invalid student or office.
-- **NFR-03 — Privacy:** Student ticket queries are restricted to the signed-in student's user ID.
-- **NFR-04 — Usability:** Forms provide labels, browser-level constraints, server-side validation, and actionable feedback. Queue status is presented in readable text.
-- **NFR-05 — Maintainability:** Keep route handling, controller logic, database access, templates, and schema in their existing project layers.
-- **NFR-06 — Persistence:** Accounts, offices, and tickets persist in MySQL across application restarts.
+| ID | Category | Requirement |
+|---|---|---|
+| NFR-01 | Security | Passwords are stored as bcrypt hashes, SQL queries are parameterized, user text is escaped when rendered, and session cookies use `HttpOnly` and `SameSite`. |
+| NFR-02 | Security | Protected pages must not be accessible to unauthorized users, even by typing the URL directly. |
+| NFR-03 | Security | Secrets such as database credentials and the session secret are kept in a `.env` file that is not committed to the repository. |
+| NFR-04 | Data integrity | Database foreign keys link tickets to students and offices. A ticket cannot be created for an invalid student or office. |
+| NFR-05 | Privacy | Student ticket queries are limited to the signed-in student's user ID. |
+| NFR-06 | Usability | Forms have labels, browser-level constraints, server-side validation, and clear success and error messages. Ticket status is shown in readable text. |
+| NFR-07 | Maintainability | The code follows the routes, controllers, models, and views structure. |
+| NFR-08 | Persistence | Accounts, offices, and tickets are stored in MySQL and remain after a page refresh or an application restart. |
 
-## 5. Use cases
+## 6. Use Cases
 
-### UC-01: Student creates an account
+### UC-01: Register an account
+- **Actor:** Student
+- **Precondition:** The visitor does not have an account.
+- **Steps:** 1. Open `/signup`. 2. Enter name, email, password, and confirmation. 3. Submit the form.
+- **Expected result:** The password is hashed, the account is created with the `student` role, and the visitor is sent to sign in. Invalid fields or an existing email show an error and keep the submitted name and email.
 
-1. The visitor opens `/signup`.
-2. The visitor enters a name, valid email, password, and confirmation.
-3. The system validates the fields and checks that the email is not already registered.
-4. The system hashes the password and creates the account with the `student` role.
-5. The system sends the visitor to sign in.
+### UC-02: Sign in
+- **Actor:** Student, Staff, or Administrator
+- **Precondition:** The user has an account.
+- **Steps:** 1. Open `/login`. 2. Enter email and password. 3. Submit the form.
+- **Expected result:** A session is created and the user is sent to the page for their role. A wrong email or password shows the same error message.
 
-**Alternate flows:** Invalid fields or an existing email produce an error and preserve the submitted name and email for correction.
+### UC-03: Request a queue ticket
+- **Actor:** Student
+- **Precondition:** The student is signed in and at least one office is active.
+- **Steps:** 1. Open `/student/queue/add`. 2. Select an office. 3. Optionally enter a purpose. 4. Submit the form.
+- **Expected result:** A ticket with the status "waiting" is saved and shown on `/student/dashboard`. A missing or invalid office, or a purpose longer than 255 characters, shows an error and nothing is saved.
 
-### UC-02: Student joins an office queue
+### UC-04: View ticket status
+- **Actor:** Student
+- **Precondition:** The student is signed in.
+- **Steps:** 1. Open `/student/dashboard`.
+- **Expected result:** The student's own tickets are shown with number, office, purpose, time, and current status.
 
-1. The student signs in and opens `/student/queue/add`.
-2. The student selects an active office and may enter a purpose.
-3. The system validates the office and purpose, creates the ticket, and assigns a queue number.
-4. The student is returned to `/student/dashboard`, where the ticket appears.
+### UC-05: Call the next ticket
+- **Actor:** Staff
+- **Precondition:** Staff is signed in, at least one ticket is waiting, and no ticket is currently being served in that office.
+- **Steps:** 1. Open `/staff/queue`. 2. Select an office. 3. Click "Call next student".
+- **Expected result:** The oldest waiting ticket changes to "serving". If a ticket is already being served, an error message is shown.
 
-**Alternate flows:** A missing or invalid office, or a purpose longer than 255 characters, is rejected with an error. The ticket is not saved.
+### UC-06: Complete or skip a ticket
+- **Actor:** Staff
+- **Precondition:** A ticket is currently being served.
+- **Steps:** 1. Open `/staff/queue`. 2. Click "Complete" or "Skip".
+- **Expected result:** The ticket status changes to "completed" or "skipped" in the database and the queue refreshes.
 
-### UC-03: Student checks ticket status
+### UC-07: Manage users
+- **Actor:** Administrator
+- **Precondition:** The administrator is signed in.
+- **Steps:** 1. Open `/admin/users`. 2. Create a staff or administrator account, edit a user's name and role, or delete a user.
+- **Expected result:** The change is saved. Invalid input and duplicate emails show an error. An administrator cannot delete their own account or change their own role, and a user who already has tickets cannot be deleted.
 
-1. The student opens `/student/dashboard`.
-2. The system retrieves tickets matching the signed-in student's ID.
-3. The system displays the ticket number, office, purpose, timestamp, and current status.
+### UC-08: Manage offices
+- **Actor:** Administrator
+- **Precondition:** The administrator is signed in.
+- **Steps:** 1. Open `/admin/offices`. 2. Add an office, rename an office, or deactivate or activate an office.
+- **Expected result:** The change is saved. A duplicate office name shows an error. Deactivated offices no longer appear in the student request form.
 
-### UC-04: Staff calls and serves the next student
-
-1. Staff signs in and opens `/staff/queue`.
-2. Staff selects an office and reviews its waiting tickets.
-3. If no ticket is currently serving, staff calls the next ticket.
-4. After service, staff marks the ticket served or skips it.
-5. The system updates the ticket status and refreshes the queue.
-
-### UC-05: Administrator manages system accounts
-
-1. An administrator opens `/admin/users`.
-2. The administrator creates a staff or administrator account, or deletes another account.
-3. The system validates fields and duplicate emails and reports the outcome.
-4. The system prevents the administrator from deleting their own account.
-
-## 6. Data and status rules
-
+## 7. Data and Status Rules
 - User roles are `student`, `staff`, and `admin`.
 - Ticket statuses are `waiting`, `serving`, `completed`, `skipped`, and `cancelled`.
-- New queue requests start as `waiting`.
-- The staff call-next action moves the oldest waiting ticket to `serving`.
+- New requests start as `waiting`.
+- "Call next" moves the oldest waiting ticket to `serving`.
 - Only a serving ticket can be completed or skipped.
-- Student ticket numbers are generated from the inserted ticket ID using the `Q-` prefix, providing a system-wide unique number.
+- Ticket numbers use the `Q-` prefix and the ticket ID, so they are unique across the system.
 
-## 7. Main application routes
+## 8. Main Application Routes
 
-| Method | Route | Purpose |
+| Method | Route | Purpose | Status |
+|---|---|---|---|
+| GET | `/` | Redirect to the page for the user's role (or `/login`) | Implemented |
+| GET / POST | `/signup` | Student registration | Implemented |
+| GET / POST | `/login` | Sign in | Implemented |
+| POST | `/logout` | Destroy the current session | Implemented |
+| GET | `/student/dashboard` | Show the signed-in student's tickets | Implemented |
+| GET / POST | `/student/queue/add` | Request a ticket for an active office | Implemented |
+| GET | `/staff/dashboard` | Staff dashboard and queue summary | Implemented |
+| GET | `/staff/queue` | Filterable office queue list | Implemented |
+| POST | `/staff/queue/call-next` | Call the next waiting ticket | Implemented |
+| POST | `/staff/queue/:id/served` | Complete a serving ticket | Implemented |
+| POST | `/staff/queue/:id/skip` | Skip a serving ticket | Implemented |
+| GET / POST | `/staff/queue/add` | Add a ticket from the staff interface | Implemented |
+| GET / POST | `/staff/queue/:id/edit` | Edit a waiting ticket | Implemented |
+| POST | `/staff/queue/:id/delete` | Delete an eligible ticket | Implemented |
+| GET / POST | `/admin/users` | List and create staff or administrator accounts | Implemented |
+| POST | `/admin/users/:id/edit` | Edit a user's name and role | Implemented |
+| POST | `/admin/users/:id/delete` | Delete another user account | Implemented |
+| GET / POST | `/admin/offices` | List and add offices | Implemented |
+| POST | `/admin/offices/:id/edit` | Rename an office | Implemented |
+| POST | `/admin/offices/:id/toggle` | Activate or deactivate an office | Implemented |
+
+## 9. Implementation Status
+
+Status is based on manual testing of the `main` branch (see `docs/test-plan.md`).
+
+| ID | Requirement | Status |
 |---|---|---|
-| GET / POST | `/signup` | Student account form and registration |
-| GET / POST | `/login` | Sign-in form and authentication |
-| POST | `/logout` | Destroy the current session |
-| GET | `/student/dashboard` | Show the signed-in student's tickets |
-| GET / POST | `/student/queue/add` | Request a ticket for an active office |
-| GET | `/staff/dashboard` | Staff dashboard and queue summary |
-| GET | `/staff/queue` | Filterable office queue list |
-| POST | `/staff/queue/call-next` | Call next waiting ticket |
-| POST | `/staff/queue/:id/served` | Complete a serving ticket |
-| POST | `/staff/queue/:id/skip` | Skip a serving ticket |
-| GET / POST | `/staff/queue/add` | Add a ticket from the staff interface |
-| GET / POST | `/staff/queue/:id/edit` | Edit a waiting ticket |
-| POST | `/staff/queue/:id/delete` | Delete an eligible ticket |
-| GET / POST | `/admin/users` | List and create staff/admin accounts |
-| POST | `/admin/users/:id/delete` | Delete another user account |
+| FR-01 | Student registration | Implemented |
+| FR-02 | Input validation | Implemented |
+| FR-03 | Sign in and sign out | Implemented |
+| FR-04 | Role-based access | Implemented |
+| FR-05 | Request a ticket | Implemented |
+| FR-06 | Ticket number and status | Implemented |
+| FR-07 | View tickets | Implemented |
+| FR-08 | Staff dashboard | Implemented |
+| FR-09 | Queue list | Implemented |
+| FR-10 | Call next | Implemented |
+| FR-11 | Complete or skip | Implemented |
+| FR-12 | Add, edit, and delete tickets | Implemented |
+| FR-13 | Account administration | Implemented |
+| FR-14 | Office management | Implemented |
 
-## 8. Known limitations
+Use cases UC-01 to UC-08 follow the status of the requirements above.
 
-- Staff accounts are not assigned to a particular office; staff with access to the staff area can select any active office.
-- Student ticket cancellation is not currently exposed in the student interface.
-- Queue ticket numbers are global rather than restarting per office or day.
+## 10. Planned Features and Known Limitations
+
+These are not implemented yet.
+
+| Item | Status |
+|---|---|
+| Assign staff accounts to a particular office | Planned |
+| Let students cancel their own tickets | Planned |
+| Ticket numbers that restart per office or per day | Planned |
+| Password reset | Planned |
+| Email verification | Planned |
