@@ -1,4 +1,3 @@
-
 function requireLogin(req, res, next) {
   if (!req.session || !req.session.user) {
     return res.redirect('/login');
@@ -23,4 +22,28 @@ function requireRole(...roles) {
   };
 }
 
-module.exports = { requireLogin, requireRole };
+// Compatibility helpers for existing routes
+function requireUser(req, res, next) {
+  return requireLogin(req, res, next);
+}
+
+function requireStaff(req, res, next) {
+  return requireRole('staff', 'admin')(req, res, next);
+}
+
+function requireAdmin(req, res, next) {
+  return requireRole('admin')(req, res, next);
+}
+
+function requireStudent(req, res, next) {
+  return requireRole('student')(req, res, next);
+}
+
+module.exports = {
+  requireLogin,
+  requireRole,
+  requireUser,
+  requireStaff,
+  requireAdmin,
+  requireStudent
+};

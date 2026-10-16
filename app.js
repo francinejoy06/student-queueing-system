@@ -27,10 +27,14 @@ app.use(
 // Routes
 app.get('/', (req, res) => {
   const user = req.session.user;
+
   res.redirect(
-    !user ? '/login'
-      : user.role === 'admin' ? '/admin/users'
-        : user.role === 'student' ? '/student/dashboard'
+    !user
+      ? '/login'
+      : user.role === 'admin'
+        ? '/admin/users'
+        : user.role === 'student'
+          ? '/student/dashboard'
           : '/staff/dashboard'
   );
 });
