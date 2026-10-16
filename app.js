@@ -24,9 +24,6 @@ app.use(
 // Test route
 app.use('/', require('./routes/auth'));
 
-const staffRoutes = require('./routes/staffRoutes');
-app.use('/staff', staffRoutes);
-
 app.get('/', (req, res) => {
   res.send('Student Queueing System is running!');
 });
