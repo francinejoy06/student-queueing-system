@@ -1,52 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Manage Users</title>
-</head>
-<body>
-  <h1>Manage Users</h1>
-  <p><a href="/admin/offices">Offices</a> | <a href="/admin/users">Users</a></p>
-
-  <% if (message) { %><p><strong><%= message %></strong></p><% } %>
-
-  <h2>Add user</h2>
-  <form method="POST" action="/admin/users">
-    <input type="text" name="full_name" maxlength="100" placeholder="Full name" required>
-    <input type="email" name="email" maxlength="100" placeholder="Email" required>
-    <input type="password" name="password" minlength="8" placeholder="Password (min 8)" required>
-    <select name="role">
-      <% roles.forEach(function (r) { %><option value="<%= r %>"><%= r %></option><% }); %>
-    </select>
-    <button type="submit">Add</button>
+<%- include('../partials/header', { title: 'User management', active: 'users', currentUser }) %>
+<% if (message) { %><div class="alert success" role="status"><%= message %></div><% } %>
+<% if (error) { %><div class="alert error" role="alert"><%= error %></div><% } %>
+<section class="admin-intro"><div><h2>Manage system access</h2><p class="muted">Create and maintain staff and administrator accounts.</p></div><span class="admin-count"><strong><%= users.length %></strong> accounts</span></section>
+<section class="panel create-user-panel">
+  <div class="panel-heading"><div><h2>Add a user</h2><p class="muted">New accounts can sign in immediately.</p></div><span class="form-badge">＋ NEW ACCOUNT</span></div>
+  <form method="POST" action="/admin/users" class="user-create-form">
+    <label>Full name<input type="text" name="full_name" maxlength="100" placeholder="Name" required></label>
+    <label>Email address<input type="email" name="email" maxlength="100" placeholder="name@school.edu" required></label>
+    <label>Temporary password<input type="password" name="password" minlength="8" maxlength="72" placeholder="8 or more characters" required></label>
+    <label>Role<select name="role" required><option value="staff">Staff</option><option value="admin">Administrator</option></select></label>
+    <div class="user-form-submit"><button class="button primary" type="submit">Create account <span>→</span></button></div>
   </form>
-
-  <h2>All users</h2>
-  <table border="1" cellpadding="6">
-    <tr><th>Name / Role</th><th>Email</th><th>Delete</th></tr>
-    <% users.forEach(function (u) { %>
-      <tr>
-        <td>
-          <form method="POST" action="/admin/users/<%= u.id %>/edit" style="display:inline">
-            <input type="text" name="full_name" value="<%= u.full_name %>" maxlength="100" required>
-            <select name="role">
-              <% roles.forEach(function (r) { %>
-                <option value="<%= r %>" <%= r === u.role ? 'selected' : '' %>><%= r %></option>
-              <% }); %>
-            </select>
-            <button type="submit">Save</button>
-          </form>
-        </td>
-        <td><%= u.email %></td>
-        <td>
-          <form method="POST" action="/admin/users/<%= u.id %>/delete" style="display:inline"
-                onsubmit="return confirm('Delete this user?')">
-            <button type="submit">Delete</button>
-          </form>
-        </td>
-      </tr>
-    <% }); %>
-  </table>
-</body>
-</html>
+</section>
+<section class="panel">
+  <div class="panel-heading"><div><h2>System users</h2><p class="muted">Accounts with access to QueueDesk</p></div></div>
+  <% if (users.length) { %><div class="table-wrap"><table><thead><tr><th>USER</th><th>EMAIL</th><th>ROLE</th><th>JOINED</th><th></th></tr></thead><tbody>
+    <% users.forEach(function (user) { %><tr><td><div class="person-cell"><span class="avatar small"><%= user.full_name.charAt(0).toUpperCase() %></span><strong><%= user.full_name %></strong></div></td><td><%= user.email %></td><td><span class="role-pill <%= user.role %>"><%= user.role %></span></td><td><%= new Date(user.created_at).toLocaleDateString() %></td><td class="row-actions">
+      <details>
+        <summary class="small-action">Edit</summary>
+        <form method="POST" action="/admin/users/<%= user.id %>/edit" style="display:flex;gap:8px;margin-top:8px">
+          <input type="text" name="full_name" value="<%= user.full_name %>" maxlength="100" required>
+          <select name="role" required>
+            <% ['student', 'staff', 'admin'].forEach(function (r) { %><option value="<%= r %>" <%= r === user.role ? 'selected' : '' %>><%= r %></option><% }); %>
+          </select>
+          <button class="small-action" type="submit">Save</button>
+        </form>
+      </details>
+      <% if (user.id !== currentUser.id) { %><form method="POST" action="/admin/users/<%= user.id %>/delete" onsubmit="return confirm('Delete this user account?')"><button class="small-action danger-text" type="submit">Delete</button></form><% } else { %><span class="you-label">You</span><% } %>
+    </td></tr><% }); %>
+  </tbody></table></div><% } else { %><div class="empty-state"><strong>No user accounts</strong></div><% } %>
+</section>
+<%- include('../partials/footer') %>

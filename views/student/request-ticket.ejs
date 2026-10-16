@@ -1,0 +1,18 @@
+<%- include('../partials/header', { title: 'Join a queue', active: 'student', currentUser }) %>
+<section class="form-panel">
+  <a class="back-link" href="/student/dashboard">← Back to my queue</a>
+  <div class="form-title"><span class="eyebrow">STUDENT SERVICES</span><h2>Join a service queue</h2><p class="muted">Choose an office and tell us what you need help with.</p></div>
+  <% if (typeof error !== 'undefined' && error) { %><div class="alert error" role="alert"><%= error %></div><% } %>
+  <% if (!offices.length) { %>
+    <div class="alert error" role="alert">There are no active service offices right now.</div>
+  <% } else { %>
+    <form method="POST" action="/student/queue/add" class="form-stack">
+      <label for="office_id">Service office</label>
+      <select name="office_id" id="office_id" required><option value="">Choose an office</option><% offices.forEach(function (office) { %><option value="<%= office.id %>" <%= String(office.id) === String(typeof selectedOfficeId !== 'undefined' ? selectedOfficeId : '') ? 'selected' : '' %>><%= office.name %></option><% }); %></select>
+      <label for="purpose">What do you need? <span class="optional">OPTIONAL</span></label>
+      <textarea name="purpose" id="purpose" maxlength="255" rows="4" placeholder="Briefly describe the service you need"><%= typeof purpose !== 'undefined' ? purpose : '' %></textarea>
+      <div class="form-actions"><a class="button secondary" href="/student/dashboard">Cancel</a><button class="button primary" type="submit">Join queue <span>→</span></button></div>
+    </form>
+  <% } %>
+</section>
+<%- include('../partials/footer') %>
