@@ -1,11 +1,11 @@
 const express = require('express');
 const staffController = require('../controllers/staffController');
-const { requireStaff } = require('../middleware/auth');
+const { requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Only staff and admin users can access these routes
-router.use(requireStaff);
+router.use(requireRole('staff', 'admin'));
 
 router.get('/dashboard', staffController.showDashboard);
 
