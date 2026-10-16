@@ -16,6 +16,7 @@
       <div class="nav-label">WORKSPACE</div>
       <% if (currentUser.role === 'admin') { %>
         <a class="nav-link <%= active === 'users' ? 'active' : '' %>" href="/admin/users"><span class="nav-icon">◎</span> User management</a>
+        <a class="nav-link <%= active === 'offices' ? 'active' : '' %>" href="/admin/offices"><span class="nav-icon">▣</span> Offices</a>
         <a class="nav-link" href="/staff/dashboard"><span class="nav-icon">▦</span> Staff dashboard</a>
       <% } else if (currentUser.role === 'student') { %>
         <a class="nav-link <%= active === 'student' ? 'active' : '' %>" href="/student/dashboard"><span class="nav-icon">≡</span> My queue</a>

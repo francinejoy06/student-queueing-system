@@ -16,6 +16,16 @@
   <div class="panel-heading"><div><h2>System users</h2><p class="muted">Accounts with access to QueueDesk</p></div></div>
   <% if (users.length) { %><div class="table-wrap"><table><thead><tr><th>USER</th><th>EMAIL</th><th>ROLE</th><th>JOINED</th><th></th></tr></thead><tbody>
     <% users.forEach(function (user) { %><tr><td><div class="person-cell"><span class="avatar small"><%= user.full_name.charAt(0).toUpperCase() %></span><strong><%= user.full_name %></strong></div></td><td><%= user.email %></td><td><span class="role-pill <%= user.role %>"><%= user.role %></span></td><td><%= new Date(user.created_at).toLocaleDateString() %></td><td class="row-actions">
+      <details>
+        <summary class="small-action">Edit</summary>
+        <form method="POST" action="/admin/users/<%= user.id %>/edit" style="display:flex;gap:8px;margin-top:8px">
+          <input type="text" name="full_name" value="<%= user.full_name %>" maxlength="100" required>
+          <select name="role" required>
+            <% ['student', 'staff', 'admin'].forEach(function (r) { %><option value="<%= r %>" <%= r === user.role ? 'selected' : '' %>><%= r %></option><% }); %>
+          </select>
+          <button class="small-action" type="submit">Save</button>
+        </form>
+      </details>
       <% if (user.id !== currentUser.id) { %><form method="POST" action="/admin/users/<%= user.id %>/delete" onsubmit="return confirm('Delete this user account?')"><button class="small-action danger-text" type="submit">Delete</button></form><% } else { %><span class="you-label">You</span><% } %>
     </td></tr><% }); %>
   </tbody></table></div><% } else { %><div class="empty-state"><strong>No user accounts</strong></div><% } %>

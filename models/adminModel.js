@@ -9,6 +9,15 @@ async function getOffices() {
   return rows;
 }
 
+// True if another office already uses this name (case-insensitive)
+async function officeNameExists(name, excludeId = 0) {
+  const [rows] = await pool.query(
+    'SELECT id FROM offices WHERE LOWER(name) = LOWER(?) AND id <> ?',
+    [name, excludeId]
+  );
+  return rows.length > 0;
+}
+
 async function createOffice(name) {
   await pool.query('INSERT INTO offices (name) VALUES (?)', [name]);
 }
@@ -17,7 +26,7 @@ async function renameOffice(id, name) {
   await pool.query('UPDATE offices SET name = ? WHERE id = ?', [name, id]);
 }
 
-// Soft delete: hindi binubura ang office para hindi masira ang mga lumang tickets
+// Soft delete: offices are not deleted so old tickets stay valid
 async function setOfficeActive(id, active) {
   await pool.query('UPDATE offices SET is_active = ? WHERE id = ?', [active, id]);
 }
@@ -52,6 +61,7 @@ async function deleteUser(id) {
 
 module.exports = {
   getOffices,
+  officeNameExists,
   createOffice,
   renameOffice,
   setOfficeActive,
