@@ -146,3 +146,7 @@ The application uses Node.js, Express, EJS, and MySQL. Users, offices, and queue
 - Students cannot cancel their own tickets in the student interface.
 - Ticket numbers are global and do not restart per office or per day.
 - There is no password reset and no email verification.
+
+
+## 10. Implementation Status
+All requirements FR-01 to FR-14 and use cases UC-01 to UC-08 are implemented in the main branch and were tested manually (see `docs/test-plan.md`). Features that are not implemented are listed in Section 9 (Known Limitations).
