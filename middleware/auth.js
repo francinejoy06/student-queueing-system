@@ -14,11 +14,36 @@ function requireRole(...roles) {
     }
 
     if (!roles.includes(req.session.user.role)) {
-      return res.status(403).send('Access denied: You do not have permission to view this page.');
+      return res.status(403).send(
+        'Access denied: You do not have permission to view this page.'
+      );
     }
 
     next();
   };
 }
 
-module.exports = { requireLogin, requireRole };
+function requireUser(req, res, next) {
+  return requireLogin(req, res, next);
+}
+
+function requireStaff(req, res, next) {
+  return requireRole('staff', 'admin')(req, res, next);
+}
+
+function requireAdmin(req, res, next) {
+  return requireRole('admin')(req, res, next);
+}
+
+function requireStudent(req, res, next) {
+  return requireRole('student')(req, res, next);
+}
+
+module.exports = {
+  requireLogin,
+  requireRole,
+  requireUser,
+  requireStaff,
+  requireAdmin,
+  requireStudent
+};

@@ -1,7 +1,8 @@
-require('dotenv').config();
+
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const session = require('express-session');
-const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,27 +14,31 @@ app.set('views', path.join(__dirname, 'views'));
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    cookie: { httpOnly: true, sameSite: 'lax' },
   })
 );
 
-// Test route
-app.use('/', require('./routes/auth'));
-
-const staffRoutes = require('./routes/staffRoutes');
-app.use('/staff', staffRoutes);
-
+// Routes
 app.get('/', (req, res) => {
-  res.send('Student Queueing System is running!');
+  const user = req.session.user;
+  res.redirect(
+    !user ? '/login'
+      : user.role === 'admin' ? '/admin/users'
+        : user.role === 'student' ? '/student/dashboard'
+          : '/staff/dashboard'
+  );
 });
 
-// Admin routes
-const adminRoutes = require('./routes/adminRoutes');
-app.use('/admin', adminRoutes);
+app.use('/', require('./routes/authRoutes'));
+app.use('/student', require('./routes/studentRoutes'));
+app.use('/staff', require('./routes/staffRoutes'));
+app.use('/admin', require('./routes/adminRoutes'));
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
