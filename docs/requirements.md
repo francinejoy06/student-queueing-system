@@ -119,34 +119,60 @@ The application uses Node.js, Express, EJS, and MySQL. Users, offices, and queue
 
 ## 8. Main Application Routes
 
-| Method | Route | Purpose |
+| Method | Route | Purpose | Status |
+|---|---|---|---|
+| GET | `/` | Redirect to the page for the user's role (or `/login`) | Implemented |
+| GET / POST | `/signup` | Student registration | Implemented |
+| GET / POST | `/login` | Sign in | Implemented |
+| POST | `/logout` | Destroy the current session | Implemented |
+| GET | `/student/dashboard` | Show the signed-in student's tickets | Implemented |
+| GET / POST | `/student/queue/add` | Request a ticket for an active office | Implemented |
+| GET | `/staff/dashboard` | Staff dashboard and queue summary | Implemented |
+| GET | `/staff/queue` | Filterable office queue list | Implemented |
+| POST | `/staff/queue/call-next` | Call the next waiting ticket | Implemented |
+| POST | `/staff/queue/:id/served` | Complete a serving ticket | Implemented |
+| POST | `/staff/queue/:id/skip` | Skip a serving ticket | Implemented |
+| GET / POST | `/staff/queue/add` | Add a ticket from the staff interface | Implemented |
+| GET / POST | `/staff/queue/:id/edit` | Edit a waiting ticket | Implemented |
+| POST | `/staff/queue/:id/delete` | Delete an eligible ticket | Implemented |
+| GET / POST | `/admin/users` | List and create staff or administrator accounts | Implemented |
+| POST | `/admin/users/:id/edit` | Edit a user's name and role | Implemented |
+| POST | `/admin/users/:id/delete` | Delete another user account | Implemented |
+| GET / POST | `/admin/offices` | List and add offices | Implemented |
+| POST | `/admin/offices/:id/edit` | Rename an office | Implemented |
+| POST | `/admin/offices/:id/toggle` | Activate or deactivate an office | Implemented |
+
+## 9. Implementation Status
+
+Status is based on manual testing of the `main` branch (see `docs/test-plan.md`).
+
+| ID | Requirement | Status |
 |---|---|---|
-| GET / POST | `/signup` | Student registration |
-| GET / POST | `/login` | Sign in |
-| POST | `/logout` | Destroy the current session |
-| GET | `/student/dashboard` | Show the signed-in student's tickets |
-| GET / POST | `/student/queue/add` | Request a ticket for an active office |
-| GET | `/staff/dashboard` | Staff dashboard and queue summary |
-| GET | `/staff/queue` | Filterable office queue list |
-| POST | `/staff/queue/call-next` | Call the next waiting ticket |
-| POST | `/staff/queue/:id/served` | Complete a serving ticket |
-| POST | `/staff/queue/:id/skip` | Skip a serving ticket |
-| GET / POST | `/staff/queue/add` | Add a ticket from the staff interface |
-| GET / POST | `/staff/queue/:id/edit` | Edit a waiting ticket |
-| POST | `/staff/queue/:id/delete` | Delete an eligible ticket |
-| GET / POST | `/admin/users` | List and create staff or administrator accounts |
-| POST | `/admin/users/:id/edit` | Edit a user's name and role |
-| POST | `/admin/users/:id/delete` | Delete another user account |
-| GET / POST | `/admin/offices` | List and add offices |
-| POST | `/admin/offices/:id/edit` | Rename an office |
-| POST | `/admin/offices/:id/toggle` | Activate or deactivate an office |
+| FR-01 | Student registration | Implemented |
+| FR-02 | Input validation | Implemented |
+| FR-03 | Sign in and sign out | Implemented |
+| FR-04 | Role-based access | Implemented |
+| FR-05 | Request a ticket | Implemented |
+| FR-06 | Ticket number and status | Implemented |
+| FR-07 | View tickets | Implemented |
+| FR-08 | Staff dashboard | Implemented |
+| FR-09 | Queue list | Implemented |
+| FR-10 | Call next | Implemented |
+| FR-11 | Complete or skip | Implemented |
+| FR-12 | Add, edit, and delete tickets | Implemented |
+| FR-13 | Account administration | Implemented |
+| FR-14 | Office management | Implemented |
 
-## 9. Known Limitations
-- Staff accounts are not assigned to a particular office; staff can select any active office.
-- Students cannot cancel their own tickets in the student interface.
-- Ticket numbers are global and do not restart per office or per day.
-- There is no password reset and no email verification.
+Use cases UC-01 to UC-08 follow the status of the requirements above.
 
+## 10. Planned Features and Known Limitations
 
-## 10. Implementation Status
-All requirements FR-01 to FR-14 and use cases UC-01 to UC-08 are implemented in the main branch and were tested manually (see `docs/test-plan.md`). Features that are not implemented are listed in Section 9 (Known Limitations).
+These are not implemented yet.
+
+| Item | Status |
+|---|---|
+| Assign staff accounts to a particular office | Planned |
+| Let students cancel their own tickets | Planned |
+| Ticket numbers that restart per office or per day | Planned |
+| Password reset | Planned |
+| Email verification | Planned |
