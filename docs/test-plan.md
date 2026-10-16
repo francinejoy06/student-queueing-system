@@ -22,29 +22,29 @@ Accounts are created by `node scripts/seed.js` (`scripts/seed.js`).
 
 | ID | Test case | Steps | Expected result | Result |
 |---|---|---|---|---|
-| AUTH-01 | Correct login | Open `/login`, enter valid email and password, submit | Redirected to the dashboard for the user's role | |
-| AUTH-02 | Wrong password | Enter valid email, wrong password | Error "Invalid email or password"; no session created | |
-| AUTH-03 | Unknown email | Enter an email that is not registered | Same error "Invalid email or password" | |
-| AUTH-04 | Empty credentials | Submit the login form with both fields empty | Validation error shown; nothing submitted to the database | |
-| AUTH-05 | Logout | While logged in, click Logout | Session destroyed; redirected to `/login` | |
-| AUTH-06 | Back button after logout | Log out, press the browser Back button | Protected page is not shown; redirected to login | |
-| AUTH-07 | Protected page, not logged in | Open `/dashboard` directly without logging in | Redirected to `/login` | |
-| AUTH-08 | Password stored hashed | After registering, check the `users` table in phpMyAdmin | `password_hash` is a bcrypt hash, not plain text | |
+| AUTH-01 | Correct login | Open `/login`, enter valid email and password, submit | Redirected to the dashboard for the user's role |Pass|
+| AUTH-02 | Wrong password | Enter valid email, wrong password | Error "Invalid email or password"; no session created |Pass|
+| AUTH-03 | Unknown email | Enter an email that is not registered | Same error "Invalid email or password" |Pass|
+| AUTH-04 | Empty credentials | Submit the login form with both fields empty | Validation error shown; nothing submitted to the database |Pass|
+| AUTH-05 | Logout | While logged in, click Logout | Session destroyed; redirected to `/login` |Pass|
+| AUTH-06 | Back button after logout | Log out, press the browser Back button | Protected page is not shown; redirected to login |Pass|
+| AUTH-07 | Protected page, not logged in | Open `/dashboard` directly without logging in | Redirected to `/login` |Pass|
+| AUTH-08 | Password stored hashed | After registering, check the `users` table in phpMyAdmin | `password_hash` is a bcrypt hash, not plain text |Pass|
 
 ## 2. Registration and Forms
 
 | ID | Test case | Steps | Expected result | Result |
 |---|---|---|---|---|
-| FORM-01 | Valid registration | Fill the register form with valid data | Account created; record appears in `users` | |
-| FORM-02 | Empty fields | Submit the register form empty | Error messages for each required field | |
-| FORM-03 | Invalid email format | Enter `abc` or `abc@` as email | Error "Invalid email format" | |
-| FORM-04 | Short password | Enter a password under 8 characters | Error about minimum password length | |
-| FORM-05 | Duplicate email | Register with an email that already exists | Error "Email already registered"; no duplicate row | |
-| FORM-06 | Valid queue request | Logged in as student, submit the queue form with valid data | Ticket created and shown with a queue number | |
-| FORM-07 | Empty queue request | Submit the queue form with required fields empty | Validation error; no ticket created | |
-| FORM-08 | Invalid office value | Edit the form (browser dev tools) to send a non-existent office ID | Server rejects it with an error message | |
-| FORM-09 | SQL injection attempt | Enter `' OR '1'='1` in the login email field | Login fails normally; no error leak or bypass | |
-| FORM-10 | HTML/script input | Enter `<script>alert(1)</script>` in the purpose field | Text displayed escaped; no script runs | |
+| FORM-01 | Valid registration | Fill the register form with valid data | Account created; record appears in `users` |Pass|
+| FORM-02 | Empty fields | Submit the register form empty | Error messages for each required field |Pass|
+| FORM-03 | Invalid email format | Enter `abc` or `abc@` as email | Error "Invalid email format" |Pass|
+| FORM-04 | Short password | Enter a password under 8 characters | Error about minimum password length |Pass|
+| FORM-05 | Duplicate email | Register with an email that already exists | Error "Email already registered"; no duplicate row |Pass|
+| FORM-06 | Valid queue request | Logged in as student, submit the queue form with valid data | Ticket created and shown with a queue number |Pass|
+| FORM-07 | Empty queue request | Submit the queue form with required fields empty | Validation error; no ticket created |Pass|
+| FORM-08 | Invalid office value | Edit the form (browser dev tools) to send a non-existent office ID | Server rejects it with an error message |Pass|
+| FORM-09 | SQL injection attempt | Enter `' OR '1'='1` in the login email field | Login fails normally; no error leak or bypass |Pass|
+| FORM-10 | HTML/script input | Enter `<script>alert(1)</script>` in the purpose field | Text displayed escaped; no script runs |Pass|
 | FORM-11 | Role escalation at registration | Register normally, but add a field `role=admin` to the request (browser dev tools, or a POST tool) | Account is created as `student`; the role field is ignored | |
 
 ## 3. Database (CRUD)
