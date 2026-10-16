@@ -1,222 +1,191 @@
 # Student Queueing System
 
-## Project Description
+## 1. Project Description
 
-The Student Queueing System is a web-based application designed to help organize student queueing activities in a school.
+The Student Queueing System is a web-based application designed to help schools manage student queues and organize queue-related transactions. It provides different access levels for students, staff, and administrators.
 
-## Team Members
+## 2. Team Members
 
 1. Abanes Francine Joy
 2. Dimacali Edgardo
 3. Tominio Angel
 
-## Features
+## 3. Assigned System
+
+**System Name:** Student Queueing System
+
+The system manages student queue tickets and provides different functions based on user roles.
+
+## 4. Features
 
 - User registration and login
-- Password hashing
+- Password hashing using `bcryptjs`
 - Session management
-- Role-based access control for students, staff, and administrators
-- Protected staff and administrator routes
-- MySQL database integration
+- Role-based access for students, staff, and administrators
+- Student dashboard and queue ticket requests
+- Staff dashboard and queue management
+- Office management
+- User management for administrators
 
-The **Student Queueing System** is a web-based application designed to help schools manage student queues and organize queue-related transactions. It provides different access levels for students, staff, and administrators to support their respective tasks.
+*Note: Verify each feature in the running application before presenting it as fully implemented.*
 
-## Features
-
-- **User Registration and Login** – Allows users to create accounts and log in.
-- **Password Hashing** – Uses `bcryptjs` to hash passwords before storing them.
-- **Session Management** – Uses `express-session` to maintain user sessions.
-- **Role-Based Access Control** – Restricts access according to user roles.
-- **Student Dashboard** – Provides access to student-related functions.
-- **Staff Dashboard and Queue Management** – Supports queue viewing and management.
-- **Office Management** – Allows administrators to manage office records.
-- **User Management** – Allows administrators to manage user accounts.
-
-*Note: Features should be verified against the implemented application and test results.*
-
-## Technologies Used
+## 5. Technologies
 
 - Node.js
 - Express.js
 - EJS
 - MySQL
+- HTML and CSS
+- bcryptjs
+- express-session
+- dotenv
 - Git and GitHub
 
-## Installation and Setup
+## 6. Installation
 
-1. Clone the repository:
+1. Install Node.js, npm, and MySQL Server.
+2. Clone the repository:
 
    ```bash
    git clone https://github.com/francinejoy06/student-queueing-system.git
    cd student-queueing-system
    ```
 
-2. Install the dependencies:
+3. Install the project dependencies:
 
    ```bash
    npm install
    ```
 
-3. Configure your environment variables using `.env.example` as a guide. Create a local `.env` file with the required database settings and session secret. Do not upload `.env` to GitHub.
+## 7. Configuration
 
-4. Start MySQL and create the database and tables required by the project.
+1. Create a `.env` file in the project root using `.env.example` as a guide.
+2. Configure the environment variables according to your local setup. For example:
 
-5. If the database is configured, run the seed script to create sample accounts:
+   ```env
+   PORT=3000
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASSWORD=
+   DB_NAME=queueing_system
+   SESSION_SECRET=your_local_session_secret
+   ```
+
+3. Replace the example values with the correct settings for your environment. Use a strong, private session secret.
+4. Do not upload your actual `.env` file or private credentials to GitHub.
+
+## 8. Database Setup
+
+1. Start MySQL using your local database tool, such as XAMPP.
+2. Open phpMyAdmin or another MySQL client.
+3. Import or execute the `db/schema.sql` file.
+
+The schema creates the `queueing_system` database and the following tables:
+
+- `users` — stores user account details, password hashes, and roles.
+- `offices` — stores office records.
+- `queue_tickets` — stores student queue tickets and their statuses.
+
+The schema also inserts four default offices:
+
+- Registrar
+- Cashier
+- Guidance Office
+- Library
+
+4. Make sure the database settings in your `.env` file match your MySQL configuration.
+
+## 9. How to Run
+
+1. Open a terminal in the project folder.
+2. Make sure MySQL is running and the database is configured.
+3. Run the seed script to create the sample accounts:
 
    ```bash
    node scripts/seed.js
    ```
 
-6. Start the application using the start command configured in `package.json`.
+4. Start the application:
 
-7. Open `http://localhost:3000` in your browser.
+   ```bash
+   node app.js
+   ```
 
-## Test Accounts
+5. Open the application in your browser:
 
-The seed script defines these sample account emails:
+   http://localhost:3000
 
-| Role | Email |
-|---|---|
-| Administrator | admin@school.edu |
-| Staff | staff@school.edu |
-| Student | student@school.edu |
+## 10. User Accounts
 
-Run the seed script successfully before using these accounts. Check the script for the configured passwords, and use only local test accounts.
+Run `node scripts/seed.js` to create the following sample accounts.
 
-## AI Assistance Disclosure
+| Role | Email | Sample Password |
+|---|---|---|
+| Administrator | admin@school.edu | `Admin123!` |
+| Staff | staff@school.edu | `Staff123!` |
+| Student | student@school.edu | `Student123!` |
 
-AI tools were used to assist with documentation and development guidance. The team is responsible for reviewing, understanding, testing, and verifying the submitted code and documentation.
-- MySQL
-- EJS (Embedded JavaScript templates)
-- bcryptjs
-- express-session
-- HTML and CSS
+**Reminder:** These sample credentials are for development and testing only. Do not use them for real accounts or production deployment.
 
-## System Requirements
+The seed script uses `bcryptjs` to hash passwords before storing them in the database. Existing accounts with the same email may not be updated when the script runs again.
 
-Before running the application, make sure you have installed:
+## 11. Project Structure
 
-- Node.js and npm
-- MySQL Server
-- Git (optional, for cloning the repository)
-- A web browser
-
-## Installation and Setup
-
-### 1. Get the Project
-
-Clone the repository or download the project files. If you already have the project locally, open its folder in VS Code.
-
-### 2. Install Dependencies
-
-Open a terminal in the project directory and run:
-
-```bash
-npm install
+```text
+student-queueing-system/
+├── config/
+│   └── db.js
+├── controllers/
+│   ├── adminController.js
+│   ├── authController.js
+│   ├── staffController.js
+│   └── studentController.js
+├── db/
+│   └── schema.sql
+├── docs/
+│   └── test-plan.md
+├── middleware/
+│   └── auth.js
+├── models/
+│   ├── adminModel.js
+│   ├── queueModel.js
+│   └── userModel.js
+├── public/
+│   └── css/
+│       └── app.css
+├── routes/
+│   ├── adminRoutes.js
+│   ├── auth.js
+│   ├── authRoutes.js
+│   ├── staffRoutes.js
+│   └── studentRoutes.js
+├── scripts/
+│   └── seed.js
+├── views/
+│   ├── admin/
+│   ├── auth/
+│   ├── partials/
+│   ├── staff/
+│   └── student/
+├── .env.example
+├── .gitignore
+├── app.js
+├── package.json
+├── package-lock.json
+├── LICENSE
+└── README.md
 ```
 
-### 3. Configure the Database
+*Note: The project structure above should match the actual files and folders in the repository. Update it if anything is missing or named differently.*
 
-Make sure your MySQL server is running.
+## 12. Known Limitations
 
-Create the database named `queueing_system`, or use the database name specified by the project's existing configuration.
+The system is intended for development and testing. Any incomplete features, known bugs, or untested functions should be documented here after verification by the team.
 
-Check the project's database configuration files to determine the required database name, tables, and connection settings.
+## 13. AI Assistance Disclosure
 
-### 4. Configure Environment Variables
+AI tools were used to assist with documentation and development guidance. The team is responsible for reviewing the code, testing the application, and verifying the accuracy of the documentation.
 
-Check `.env.example` for the required environment variables.
+## 14. License
 
-Create a local `.env` file and provide the appropriate values for your database connection and session secret.
-
-**Important:** Do not commit your `.env` file or expose database passwords and session secrets.
-
-### 5. Prepare the Database
-
-If the project includes a database schema or setup script, follow the instructions provided by the project.
-
-To create the sample user accounts, configure the database first and run:
-
-```bash
-node scripts/seed.js
-```
-
-Run this script only if it exists in the project and is appropriate for your local database.
-
-### 6. Start the Application
-
-Run:
-
-```bash
-node app.js
-```
-
-If the application starts successfully, the terminal should display the server address.
-
-### 7. Open the Application
-
-Open your browser and visit:
-
-http://localhost:3000
-
-## User Roles
-
-The system supports three user roles:
-
-| Role | Main Responsibilities |
-|---|---|
-| Student | Access student-related pages and queue functions. |
-| Staff | View and manage queues and access staff functions. |
-| Administrator | Manage offices and user accounts and access authorized administrative functions. |
-
-Access is restricted according to the user's role.
-
-## Sample Test Accounts
-
-The project's seed script defines sample accounts for testing:
-
-| Role | Email |
-|---|---|
-| Administrator | `admin@school.edu` |
-| Staff | `staff@school.edu` |
-| Student | `student@school.edu` |
-
-Use the passwords specified in the project's test plan or seed configuration.
-
-**Security reminder:** Use sample credentials only in a local testing environment. Never use them for production accounts.
-
-## Testing
-
-The manual testing checklist is available in [`docs/test-plan.md`](docs/test-plan.md).
-
-Testing should include:
-
-- User registration and login
-- Session creation and logout
-- Student access to student pages
-- Staff access to staff pages
-- Administrator access to administrative pages
-- Prevention of unauthorized access between roles
-- Queue management functions
-- Office and user management functions
-
-Record the actual result of each test as **Pass** or **Fail**. Document failures in GitHub Issues and retest after corrections.
-
-Automated testing should be documented here once it has been configured and verified.
-
-## Security Notes
-
-- Keep `.env` out of version control.
-- Never commit real passwords, database credentials, or session secrets.
-- Store password hashes instead of plain-text passwords.
-- Apply role-based access checks to protected routes.
-- Test both authorized and unauthorized access.
-- Do not expose sensitive information in error messages.
-
-## AI Disclosure
-
-AI assistance was used to help prepare project documentation and provide guidance during development and testing. The project team is responsible for reviewing the code, verifying the documented features, and confirming all test results.
-
-## Project Status
-
-The project is undergoing development and testing. Refer to [`docs/test-plan.md`](docs/test-plan.md) for the testing checklist and recorded results.
+This project is licensed under the MIT License. See the `LICENSE` file for details.
