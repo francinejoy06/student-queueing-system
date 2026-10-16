@@ -2,89 +2,156 @@
 
 ## Project Description
 
-The Student Queueing System is a web-based application developed to help manage student queues and organize queue-related transactions in a school.
+The **Student Queueing System** is a web-based application designed to help schools manage student queues and organize queue-related transactions. It provides different access levels for students, staff, and administrators to support their respective tasks.
+
+## Features
+
+- **User Registration and Login** – Allows users to create accounts and log in.
+- **Password Hashing** – Uses `bcryptjs` to hash passwords before storing them.
+- **Session Management** – Uses `express-session` to maintain user sessions.
+- **Role-Based Access Control** – Restricts access according to user roles.
+- **Student Dashboard** – Provides access to student-related functions.
+- **Staff Dashboard and Queue Management** – Supports queue viewing and management.
+- **Office Management** – Allows administrators to manage office records.
+- **User Management** – Allows administrators to manage user accounts.
+
+*Note: Features should be verified against the implemented application and test results.*
 
 ## Technologies Used
 
 - Node.js
 - Express.js
 - MySQL
-- EJS
+- EJS (Embedded JavaScript templates)
 - bcryptjs
 - express-session
+- HTML and CSS
 
-## Features
+## System Requirements
 
-- User registration and login
-- Password hashing
-- Session management
-- Role-based access control for students, staff, and administrators
-- Staff queue management routes
-- Administrator routes for office and user management
-
-*Note: Features should be confirmed against the implemented pages and tested routes.*
-
-## Requirements
+Before running the application, make sure you have installed:
 
 - Node.js and npm
-- MySQL
+- MySQL Server
 - Git (optional, for cloning the repository)
+- A web browser
 
 ## Installation and Setup
 
-1. Clone or download this repository.
-2. Open a terminal in the project folder.
-3. Install the dependencies:
+### 1. Get the Project
 
-   ```bash
-   npm install
-   ```
+Clone the repository or download the project files. If you already have the project locally, open its folder in VS Code.
 
-4. Create a MySQL database named `queueing_system`, or use the database name configured in your local environment.
-5. Configure the database connection and session secret using `.env.example` as a guide. Create a local `.env` file with your own values.
-6. Start the application:
+### 2. Install Dependencies
 
-   ```bash
-   node app.js
-   ```
+Open a terminal in the project directory and run:
 
-7. Open `http://localhost:3000` in your browser.
+```bash
+npm install
+```
 
-## Test Accounts
+### 3. Configure the Database
 
-The project includes a seed script that defines test accounts for three roles. To create them, configure the database first and run:
+Make sure your MySQL server is running.
+
+Create the database named `queueing_system`, or use the database name specified by the project's existing configuration.
+
+Check the project's database configuration files to determine the required database name, tables, and connection settings.
+
+### 4. Configure Environment Variables
+
+Check `.env.example` for the required environment variables.
+
+Create a local `.env` file and provide the appropriate values for your database connection and session secret.
+
+**Important:** Do not commit your `.env` file or expose database passwords and session secrets.
+
+### 5. Prepare the Database
+
+If the project includes a database schema or setup script, follow the instructions provided by the project.
+
+To create the sample user accounts, configure the database first and run:
 
 ```bash
 node scripts/seed.js
 ```
 
+Run this script only if it exists in the project and is appropriate for your local database.
+
+### 6. Start the Application
+
+Run:
+
+```bash
+node app.js
+```
+
+If the application starts successfully, the terminal should display the server address.
+
+### 7. Open the Application
+
+Open your browser and visit:
+
+http://localhost:3000
+
+## User Roles
+
+The system supports three user roles:
+
+| Role | Main Responsibilities |
+|---|---|
+| Student | Access student-related pages and queue functions. |
+| Staff | View and manage queues and access staff functions. |
+| Administrator | Manage offices and user accounts and access authorized administrative functions. |
+
+Access is restricted according to the user's role.
+
+## Sample Test Accounts
+
+The project's seed script defines sample accounts for testing:
+
 | Role | Email |
 |---|---|
-| Admin | admin@school.edu |
-| Staff | staff@school.edu |
-| Student | student@school.edu |
+| Administrator | `admin@school.edu` |
+| Staff | `staff@school.edu` |
+| Student | `student@school.edu` |
 
-The seed script uses bcryptjs to hash passwords before storing them. Use the passwords provided in the project's test plan in a local testing environment only. Do not use these sample credentials in a production deployment.
+Use the passwords specified in the project's test plan or seed configuration.
+
+**Security reminder:** Use sample credentials only in a local testing environment. Never use them for production accounts.
 
 ## Testing
 
 The manual testing checklist is available in [`docs/test-plan.md`](docs/test-plan.md).
 
-Record the actual result of each test as **Pass** or **Fail**. Document failures in the project's GitHub Issues and retest after fixes.
+Testing should include:
 
-Automated testing is not yet configured in `package.json`.
+- User registration and login
+- Session creation and logout
+- Student access to student pages
+- Staff access to staff pages
+- Administrator access to administrative pages
+- Prevention of unauthorized access between roles
+- Queue management functions
+- Office and user management functions
+
+Record the actual result of each test as **Pass** or **Fail**. Document failures in GitHub Issues and retest after corrections.
+
+Automated testing should be documented here once it has been configured and verified.
 
 ## Security Notes
 
 - Keep `.env` out of version control.
-- Do not commit real passwords, database credentials, or session secrets.
-- Use hashed passwords rather than storing plain-text passwords.
-- Test access restrictions for each user role.
+- Never commit real passwords, database credentials, or session secrets.
+- Store password hashes instead of plain-text passwords.
+- Apply role-based access checks to protected routes.
+- Test both authorized and unauthorized access.
+- Do not expose sensitive information in error messages.
 
 ## AI Disclosure
 
-AI assistance was used to help prepare project documentation and guide development and testing. Project code and test results should be reviewed and verified by the team.
+AI assistance was used to help prepare project documentation and provide guidance during development and testing. The project team is responsible for reviewing the code, verifying the documented features, and confirming all test results.
 
 ## Project Status
 
-Testing is in progress. See [`docs/test-plan.md`](docs/test-plan.md) for the checklist and recorded results.
+The project is undergoing development and testing. Refer to [`docs/test-plan.md`](docs/test-plan.md) for the testing checklist and recorded results.
