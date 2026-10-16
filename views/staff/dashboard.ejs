@@ -1,0 +1,22 @@
+<%- include('../partials/header', { title: 'Dashboard', active: 'dashboard', currentUser }) %>
+<section class="welcome-row">
+  <div><h2>Good day, <%= currentUser.full_name.split(' ')[0] %> 👋</h2><p class="muted">Here’s what’s happening across your queues today.</p></div>
+  <a class="button primary" href="/staff/queue">Manage queue <span>→</span></a>
+</section>
+<section class="stats-grid">
+  <article class="stat-card"><div class="stat-heading"><span class="stat-icon amber">◷</span><span class="stat-label">WAITING</span></div><strong><%= stats.waiting || 0 %></strong><span class="stat-note">Students in line</span></article>
+  <article class="stat-card"><div class="stat-heading"><span class="stat-icon blue">◎</span><span class="stat-label">NOW SERVING</span></div><strong><%= stats.serving || 0 %></strong><span class="stat-note">Currently at a counter</span></article>
+  <article class="stat-card"><div class="stat-heading"><span class="stat-icon green">✓</span><span class="stat-label">SERVED TODAY</span></div><strong><%= stats.completed || 0 %></strong><span class="stat-note">Completed tickets today</span></article>
+  <article class="stat-card"><div class="stat-heading"><span class="stat-icon purple">▤</span><span class="stat-label">TOTAL TODAY</span></div><strong><%= stats.total || 0 %></strong><span class="stat-note">Tickets created today</span></article>
+</section>
+<section class="panel">
+  <div class="panel-heading"><div><h2>Recent activity</h2><p class="muted">Latest tickets across all service counters</p></div><a class="text-link" href="/staff/queue">View queue <span>→</span></a></div>
+  <% if (recent.length) { %>
+    <div class="table-wrap"><table><thead><tr><th>TICKET</th><th>STUDENT</th><th>SERVICE OFFICE</th><th>CREATED</th><th>STATUS</th></tr></thead><tbody>
+      <% recent.forEach(function (ticket) { %>
+        <tr><td><strong class="ticket-number"><%= ticket.ticket_number %></strong></td><td><%= ticket.full_name %></td><td><%= ticket.office_name %></td><td><%= new Date(ticket.created_at).toLocaleString() %></td><td><span class="status <%= ticket.status %>"><%= ticket.status %></span></td></tr>
+      <% }); %>
+    </tbody></table></div>
+  <% } else { %><div class="empty-state"><span>▤</span><strong>No activity yet</strong><p>New queue tickets will appear here.</p></div><% } %>
+</section>
+<%- include('../partials/footer') %>
