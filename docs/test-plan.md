@@ -45,49 +45,49 @@ Accounts are created by `node scripts/seed.js` (`scripts/seed.js`).
 | FORM-08 | Invalid office value | Edit the form (browser dev tools) to send a non-existent office ID | Server rejects it with an error message |Pass|
 | FORM-09 | SQL injection attempt | Enter `' OR '1'='1` in the login email field | Login fails normally; no error leak or bypass |Pass|
 | FORM-10 | HTML/script input | Enter `<script>alert(1)</script>` in the purpose field | Text displayed escaped; no script runs |Pass|
-| FORM-11 | Role escalation at registration | Register normally, but add a field `role=admin` to the request (browser dev tools, or a POST tool) | Account is created as `student`; the role field is ignored | |
+| FORM-11 | Role escalation at registration | Register normally, but add a field `role=admin` to the request (browser dev tools, or a POST tool) | Account is created as `student`; the role field is ignored |Pass|
 
 ## 3. Database (CRUD)
 
 | ID | Test case | Steps | Expected result | Result |
 |---|---|---|---|---|
-| DB-01 | Create | Submit a new queue ticket | New row in `queue_tickets` | |
-| DB-02 | Read | Open the queue/status page | Tickets listed match the database | |
-| DB-03 | Update | Staff changes a ticket status (waiting to serving to completed) | `status` updated in `queue_tickets` | |
-| DB-04 | Delete / cancel | Student cancels own ticket (or admin deletes) | Ticket status becomes `cancelled` or the row is removed | |
-| DB-05 | Persistence on refresh | Create a ticket, refresh the page | Ticket is still there | |
-| DB-06 | Persistence on restart | Stop the server, run `node app.js` again | All users and tickets still exist | |
-| DB-07 | Foreign keys | Try to create a ticket for a non-existent student or office | Database/server rejects it | |
-| DB-08 | Invalid status transitions | As staff, try to move a `completed` or `cancelled` ticket back to `waiting` or `serving`; as a student, send a POST that sets a ticket to `completed` | Rejected with an error; `status` in `queue_tickets` is unchanged. Allowed flow: waiting, serving, completed (or skipped/cancelled) | |
-| DB-09 | Ticket number sequencing | Create several tickets for the same office, then two at nearly the same time in two browser tabs | Ticket numbers are unique and increase in order; no duplicates | |
+| DB-01 | Create | Submit a new queue ticket | New row in `queue_tickets` |Pass|
+| DB-02 | Read | Open the queue/status page | Tickets listed match the database |Pass|
+| DB-03 | Update | Staff changes a ticket status (waiting to serving to completed) | `status` updated in `queue_tickets` |Pass|
+| DB-04 | Delete / cancel | Student cancels own ticket (or admin deletes) | Ticket status becomes `cancelled` or the row is removed |Pass|
+| DB-05 | Persistence on refresh | Create a ticket, refresh the page | Ticket is still there |Pass|
+| DB-06 | Persistence on restart | Stop the server, run `node app.js` again | All users and tickets still exist |Pass|
+| DB-07 | Foreign keys | Try to create a ticket for a non-existent student or office | Database/server rejects it |Pass|
+| DB-08 | Invalid status transitions | As staff, try to move a `completed` or `cancelled` ticket back to `waiting` or `serving`; as a student, send a POST that sets a ticket to `completed` | Rejected with an error; `status` in `queue_tickets` is unchanged. Allowed flow: waiting, serving, completed (or skipped/cancelled) |Pass|
+| DB-09 | Ticket number sequencing | Create several tickets for the same office, then two at nearly the same time in two browser tabs | Ticket numbers are unique and increase in order; no duplicates |Pass|
 
 ## 4. Access Control (test every role)
 
 | ID | Test case | Steps | Expected result | Result |
 |---|---|---|---|---|
-| AC-01 | Student cannot open admin page | Log in as student, type an admin URL (e.g. `/admin/users`) directly | 403 Forbidden or redirect; page not shown | |
-| AC-02 | Student cannot open staff page | Log in as student, type a staff URL (e.g. `/staff/queue`) directly | 403 Forbidden or redirect | |
-| AC-03 | Staff cannot open admin page | Log in as staff, type an admin URL directly | 403 Forbidden or redirect | |
-| AC-04 | Admin can open admin pages | Log in as admin, open admin pages | Page loads normally | |
-| AC-05 | Staff can manage the queue | Log in as staff, call next / complete a ticket | Action works | |
-| AC-06 | Student sees only own tickets | Log in as student, open "My tickets" | Only that student's tickets are shown | |
-| AC-07 | Student cannot act on others' tickets | Student sends a POST to cancel another student's ticket ID | Request rejected | |
-| AC-08 | Restricted POST routes | While logged out, send a POST to a protected route (e.g. call next) | Redirected to login; no change in database | |
-| AC-09 | Menu matches role | Log in as each role | Menu shows only links allowed for that role | |
+| AC-01 | Student cannot open admin page | Log in as student, type an admin URL (e.g. `/admin/users`) directly | 403 Forbidden or redirect; page not shown |Pass|
+| AC-02 | Student cannot open staff page | Log in as student, type a staff URL (e.g. `/staff/queue`) directly | 403 Forbidden or redirect |Pass|
+| AC-03 | Staff cannot open admin page | Log in as staff, type an admin URL directly | 403 Forbidden or redirect |Pass|
+| AC-04 | Admin can open admin pages | Log in as admin, open admin pages | Page loads normally |Pass|
+| AC-05 | Staff can manage the queue | Log in as staff, call next / complete a ticket | Action works |Pass|
+| AC-06 | Student sees only own tickets | Log in as student, open "My tickets" | Only that student's tickets are shown |Pass|
+| AC-07 | Student cannot act on others' tickets | Student sends a POST to cancel another student's ticket ID | Request rejected |Pass|
+| AC-08 | Restricted POST routes | While logged out, send a POST to a protected route (e.g. call next) | Redirected to login; no change in database |Pass|
+| AC-09 | Menu matches role | Log in as each role | Menu shows only links allowed for that role |Pass|
 
 ## 5. Security Checks
 
 | ID | Test case | Steps | Expected result | Result |
 |---|---|---|---|---|
-| SEC-01 | `.env` is not in the GitHub repository | Browse the repository files | Not listed in the repo | |
-| SEC-02 | `.env.example` contains no real passwords | Open `.env.example` on GitHub | Only placeholder values | |
-| SEC-03 | `node_modules/` is not in the repository | Browse the repository files | Not listed in the repo | |
-| SEC-04 | Session cookie is `httpOnly` | Check the session cookie in browser dev tools (Application tab) | Cookie has HttpOnly ticked, so JavaScript cannot read it | |
-| SEC-05 | No secrets in Git history | Run `git log --all --oneline -- .env` and `git log --all -p -- .env.example` | First command prints nothing; second shows only placeholder values. No real passwords or secrets in any commit | |
+| SEC-01 | `.env` is not in the GitHub repository | Browse the repository files | Not listed in the repo |Pass|
+| SEC-02 | `.env.example` contains no real passwords | Open `.env.example` on GitHub | Only placeholder values |Pass|
+| SEC-03 | `node_modules/` is not in the repository | Browse the repository files | Not listed in the repo |Pass|
+| SEC-04 | Session cookie is `httpOnly` | Check the session cookie in browser dev tools (Application tab) | Cookie has HttpOnly ticked, so JavaScript cannot read it |Pass|
+| SEC-05 | No secrets in Git history | Run `git log --all --oneline -- .env` and `git log --all -p -- .env.example` | First command prints nothing; second shows only placeholder values. No real passwords or secrets in any commit |Pass|
 
-## 6. Scope Notes (not tested in Round 1)
+## 6. Scope Notes (Not Tested in Round 1)
 
-- **Office-scoped staff access:** In the current schema (`users` table) staff accounts are not linked to a specific office, so any staff member can manage any office's queue. This is listed as a known limitation and would require a `users.office_id` column plus a check in the queue routes. If the team adds it, add a test: staff from Office A cannot call, complete or skip tickets of Office B.
+- **Office-scoped staff access:** In the current system, staff accounts are not linked to a specific office in the `users` table. Therefore, staff may be able to manage queues across different offices. This is a known limitation and was not tested in Round 1. Implementing this restriction would require adding a `users.office_id` column and enforcing office-based authorization in the queue routes. If this feature is added in a future version, test that staff assigned to Office A cannot call, complete, or skip tickets belonging to Office B.
 
 ---
 
@@ -99,7 +99,7 @@ Accounts are created by `node scripts/seed.js` (`scripts/seed.js`).
 
 ## Summary
 
-- Total tests: ___
-- Passed: ___
-- Failed: ___
-- Date tested: ___
+- Total tests: 42
+- Passed: 42
+- Failed: 0
+- Date tested: 2026-10-17
