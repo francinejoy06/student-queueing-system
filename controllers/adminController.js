@@ -168,8 +168,15 @@ async function deleteUser(req, res) {
     const deleted = await userModel.remove(id);
     res.redirect(`/admin/users?message=${deleted ? 'User+deleted' : 'User+not+found'}`);
   } catch (err) {
+    // The user still has queue tickets, so the database blocks the delete
+    if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.redirect(
+        '/admin/users?error=' +
+          encodeURIComponent('This user has queue tickets and cannot be deleted.')
+      );
+    }
     console.error(err);
-    res.status(500).send('Could not delete the user. A user with queue records cannot be deleted.');
+    res.redirect('/admin/users?error=' + encodeURIComponent('Could not delete the user.'));
   }
 }
 
