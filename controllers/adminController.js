@@ -157,21 +157,34 @@ async function editUser(req, res) {
   }
 }
 
+
 async function deleteUser(req, res) {
   const id = Number.parseInt(req.params.id, 10);
   if (!Number.isInteger(id) || id < 1) return res.status(400).send('Invalid user.');
+
   if (id === Number(req.session.user.id)) {
     return res.redirect('/admin/users?error=You+cannot+delete+your+own+account');
   }
 
   try {
     const deleted = await userModel.remove(id);
-    res.redirect(`/admin/users?message=${deleted ? 'User+deleted' : 'User+not+found'}`);
+    return res.redirect(`/admin/users?message=${deleted ? 'User+deleted' : 'User+not+found'}`);
   } catch (err) {
+    if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.redirect(
+        '/admin/users?error=' +
+         encodeURIComponent('This user has queue tickets and cannot be deleted.')
+      );
+    }
+
     console.error(err);
-    res.status(500).send('Could not delete the user. A user with queue records cannot be deleted.');
+    return res.redirect(
+      '/admin/users?error=' +
+        encodeURIComponent('Could not delete the user.')
+    );
   }
 }
+
 
 module.exports = {
   showOffices,
