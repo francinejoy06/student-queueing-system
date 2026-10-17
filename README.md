@@ -144,6 +144,7 @@ student-queueing-system/
 │   └── schema.sql
 ├── docs/
 │   └── test-plan.md
+│   └── requirements.md
 ├── middleware/
 │   └── auth.js
 ├── models/
