@@ -25,7 +25,7 @@ The system manages student queue tickets and provides different functions based 
 - Role-based access for students, staff, and administrators
 - Student dashboard and queue ticket requests
 - Students can cancel their own queue ticket
-- Sequential ticket numbers per office (tracked in `office_ticket_counters`)
+- Separate ticket numbering for each office, with its own letter prefix (tracked in `office_ticket_counters`)
 - Staff dashboard showing the queue of the staff member's assigned office (call next, complete, skip)
 - Staff can edit the purpose of a queue ticket
 - Administrator office management (add offices)
@@ -88,7 +88,7 @@ The schema creates the database and the following tables:
 
 - `users` — user accounts, password hashes, roles, and the assigned office of staff members (`office_id`).
 - `offices` — office records, with an `is_active` flag.
-- `office_ticket_counters` — the last ticket number used by each office, used to generate sequential ticket numbers.
+- `office_ticket_counters` — the last ticket number used by each office. Each office has its own row, so numbering is separate per office.
 - `queue_tickets` — student queue tickets and their statuses (`waiting`, `serving`, `completed`, `skipped`, `cancelled`). A cancelled ticket keeps its record with the status `cancelled`.
 
 Default offices: Registrar, Cashier, Guidance Office, Library. Administrators can add more offices from the admin pages.
@@ -179,13 +179,14 @@ student-queueing-system/
 └── README.md
 ```
 
-*Note: This structure should match the actual files in the repository.*
-
 ## 12. Known Limitations
 
-Students can only cancel tickets that are still `waiting`. / Students can also cancel a `serving` ticket.
-Administrators cannot add or edit users, and cannot delete a user who already has tickets.
-Ticket numbers do not reset daily.
+- Administrators can only add offices. They cannot rename, deactivate, or delete offices.
+- Administrators cannot add or edit users. They can only move a staff member to another office or delete a user.
+- Anyone can register as staff and choose an office. There is no approval step from an administrator.
+- Administrator accounts can only be created by the seed script.
+- There is no password reset or change password feature.
+- Testing was done manually using the test plan in `docs/test-plan.md`. There are no automated tests.
 
 ## 13. AI Assistance Disclosure
 
