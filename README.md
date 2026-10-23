@@ -178,7 +178,6 @@ student-queueing-system/
 ├── LICENSE
 └── README.md
 ```
-
 ## 12. Known Limitations
 
 - Administrators can only add offices. They cannot rename, deactivate, or delete offices.
