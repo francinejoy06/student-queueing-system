@@ -2,13 +2,13 @@
 
 ## 1. Project Description
 
-The Student Queueing System is a web-based application designed to help schools manage student queues and organize queue-related transactions. It provides different access levels for students, staff, and administrators.
+The Student Queueing System is a web-based application that helps schools manage student queues. Students request queue tickets for school offices, staff manage the queue of their own office, and administrators manage offices and staff assignments. Each role has its own access level.
 
 ## 2. Team Members
 
-1. Abanes Francine Joy
-2. Dimacali Edgardo
-3. Tominio Angel
+1. Abanes, Francine Joy
+2. Dimacali, Edgardo
+3. Tominio, Angel
 
 ## 3. Assigned System
 
@@ -18,16 +18,19 @@ The system manages student queue tickets and provides different functions based 
 
 ## 4. Features
 
-- User registration and login
+- User registration and login for students and staff
+- Staff select the office they belong to when they register
 - Password hashing using `bcryptjs`
-- Session management
+- Session management and logout
 - Role-based access for students, staff, and administrators
 - Student dashboard and queue ticket requests
-- Staff dashboard and queue management
-- Office management
-- User management for administrators
-
-*Note: Verify each feature in the running application before presenting it as fully implemented.*
+- Students can cancel their own queue ticket
+- Sequential ticket numbers per office (tracked in `office_ticket_counters`)
+- Staff dashboard showing the queue of the staff member's assigned office (call next, complete, skip)
+- Staff can edit the purpose of a queue ticket
+- Administrator office management (add offices)
+- Administrator user management: assign or move a staff member to a different office, and delete users
+- Input validation with error messages on all forms
 
 ## 5. Technologies
 
@@ -43,7 +46,7 @@ The system manages student queue tickets and provides different functions based 
 
 ## 6. Installation
 
-1. Install Node.js, npm, and MySQL Server.
+1. Install Node.js, npm, and MySQL Server (for example through XAMPP).
 2. Clone the repository:
 
    ```bash
@@ -71,8 +74,9 @@ The system manages student queue tickets and provides different functions based 
    SESSION_SECRET=your_local_session_secret
    ```
 
-3. Replace the example values with the correct settings for your environment. Use a strong, private session secret.
-4. Do not upload your actual `.env` file or private credentials to GitHub.
+3. `DB_NAME` must match the database name created by `db/schema.sql`.
+4. Use a strong, private session secret.
+5. Do not upload your actual `.env` file or private credentials to GitHub.
 
 ## 8. Database Setup
 
@@ -80,18 +84,14 @@ The system manages student queue tickets and provides different functions based 
 2. Open phpMyAdmin or another MySQL client.
 3. Import or execute the `db/schema.sql` file.
 
-The schema creates the `queueing_system` database and the following tables:
+The schema creates the database and the following tables:
 
-- `users` — stores user account details, password hashes, and roles.
-- `offices` — stores office records.
-- `queue_tickets` — stores student queue tickets and their statuses.
+- `users` — user accounts, password hashes, roles, and the assigned office of staff members (`office_id`).
+- `offices` — office records, with an `is_active` flag.
+- `office_ticket_counters` — the last ticket number used by each office, used to generate sequential ticket numbers.
+- `queue_tickets` — student queue tickets and their statuses (`waiting`, `serving`, `completed`, `skipped`, `cancelled`). A cancelled ticket keeps its record with the status `cancelled`.
 
-The schema also inserts four default offices:
-
-- Registrar
-- Cashier
-- Guidance Office
-- Library
+Default offices: Registrar, Cashier, Guidance Office, Library. Administrators can add more offices from the admin pages.
 
 4. Make sure the database settings in your `.env` file match your MySQL configuration.
 
@@ -117,15 +117,18 @@ The schema also inserts four default offices:
 
 ## 10. User Accounts
 
-Run `node scripts/seed.js` to create the following sample accounts.
+Sample accounts are created by `node scripts/seed.js`:
 
 | Role | Email | Sample Password |
 |---|---|---|
 | Administrator | admin@school.edu | `Admin123!` |
-| Staff | staff@school.edu | `Staff123!` |
 | Student | student@school.edu | `Student123!` |
 
-**Reminder:** These sample credentials are for development and testing only. Do not use them for real accounts or production deployment.
+**Registration and permissions:**
+
+- **Students** register from the registration page. They can request queue tickets, view their own tickets, and cancel their own tickets.
+- **Staff** register from the registration page and choose the office they are assigned to. They manage only the queue of that office and can edit the purpose of a ticket. They cannot edit user accounts.
+- **Administrators** are created by the seed script. They can add offices, assign or move a staff member to another office, and delete users. They cannot add users or edit user details such as name and role.
 
 The seed script uses `bcryptjs` to hash passwords before storing them in the database. Existing accounts with the same email may not be updated when the script runs again.
 
@@ -143,8 +146,8 @@ student-queueing-system/
 ├── db/
 │   └── schema.sql
 ├── docs/
+│   ├── requirements.md
 │   └── test-plan.md
-│   └── requirements.md
 ├── middleware/
 │   └── auth.js
 ├── models/
@@ -156,7 +159,6 @@ student-queueing-system/
 │       └── app.css
 ├── routes/
 │   ├── adminRoutes.js
-│   ├── auth.js
 │   ├── authRoutes.js
 │   ├── staffRoutes.js
 │   └── studentRoutes.js
@@ -177,15 +179,17 @@ student-queueing-system/
 └── README.md
 ```
 
-*Note: The project structure above should match the actual files and folders in the repository. Update it if anything is missing or named differently.*
+*Note: This structure should match the actual files in the repository.*
 
 ## 12. Known Limitations
 
-The system is intended for development and testing. Any incomplete features, known bugs, or untested functions should be documented here after verification by the team.
+Students can only cancel tickets that are still `waiting`. / Students can also cancel a `serving` ticket.
+Administrators cannot add or edit users, and cannot delete a user who already has tickets.
+Ticket numbers do not reset daily.
 
 ## 13. AI Assistance Disclosure
 
-AI tools were used to assist with documentation and development guidance. The team is responsible for reviewing the code, testing the application, and verifying the accuracy of the documentation.
+AI tools were used in this project. Claude (Anthropic) was used for step-by-step development guidance, code drafts, documentation drafts, and test plan and code review suggestions. The team is responsible for reviewing, testing, and being able to explain all the code and documentation.
 
 ## 14. License
 
