@@ -83,20 +83,71 @@ async function getTicket(id) {
   return rows[0] || null;
 }
 
+
 async function createTicket({ studentId, officeId, purpose }) {
   const connection = await pool.getConnection();
+
   try {
     await connection.beginTransaction();
+
+    // Lock this office's counter so simultaneous requests
+    // cannot receive the same number.
+    const [counterRows] = await connection.query(
+      `SELECT last_number
+       FROM office_ticket_counters
+       WHERE office_id = ?
+       FOR UPDATE`,
+      [officeId]
+    );
+
+    if (counterRows.length === 0) {
+      throw new Error('Ticket counter not found for this office.');
+    }
+
+    const nextNumber = Number(counterRows[0].last_number) + 1;
+
+    // Get the office name to create its ticket prefix.
+    const [officeRows] = await connection.query(
+      'SELECT name FROM offices WHERE id = ? AND is_active = TRUE',
+      [officeId]
+    );
+
+    if (officeRows.length === 0) {
+      throw new Error('Office not found or inactive.');
+    }
+
+    const prefixMap = {
+      'Registrar': 'R',
+      'Cashier': 'C',
+      'Guidance Office': 'G',
+      'Library': 'L',
+      'Admission Office': 'A'
+    };
+
+    const prefix = prefixMap[officeRows[0].name];
+
+    if (!prefix) {
+      throw new Error('No ticket prefix configured for this office.');
+    }
+
+    const ticketNumber = `${prefix}-${String(nextNumber).padStart(3, '0')}`;
+
+    // Create the ticket with its office-specific number.
     const [result] = await connection.query(
-      `INSERT INTO queue_tickets (ticket_number, student_id, office_id, purpose)
-       VALUES ('', ?, ?, ?)`,
-      [studentId, officeId, purpose || null]
+      `INSERT INTO queue_tickets
+         (ticket_number, student_id, office_id, purpose)
+       VALUES (?, ?, ?, ?)`,
+      [ticketNumber, studentId, officeId, purpose || null]
     );
-    const ticketNumber = `Q-${String(result.insertId).padStart(4, '0')}`;
+
+    // Save the new counter value.
     await connection.query(
-      'UPDATE queue_tickets SET ticket_number = ? WHERE id = ?',
-      [ticketNumber, result.insertId]
+      `UPDATE office_ticket_counters
+       SET last_number = ?
+       WHERE office_id = ?`,
+      [nextNumber, officeId]
     );
+
     await connection.commit();
     return result.insertId;
   } catch (err) {
@@ -106,6 +157,7 @@ async function createTicket({ studentId, officeId, purpose }) {
     connection.release();
   }
 }
+
 
 async function updateTicket(id, { studentId, officeId, purpose }) {
   const [result] = await pool.query(
