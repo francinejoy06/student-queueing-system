@@ -179,8 +179,6 @@ Status reflects the current `main` branch. Test results are recorded in `docs/te
 | FR-15 | Staff office assignment | Implemented |
 | FR-16 | Delete users | Implemented |
 
-Use cases UC-01 to UC-10 follow the status of the requirements above.
-
 ## 10. Planned Features and Known Limitations
 
 | Item | Status |
