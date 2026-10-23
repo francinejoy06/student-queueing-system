@@ -14,6 +14,10 @@ router.post('/signup', authController.signup);
 router.get('/register', authController.showSignup);
 router.post('/register', authController.signup);
 
+// Staff registration
+router.get('/staff/register', authController.showStaffSignup);
+router.post('/staff/register', authController.staffSignup);
+
 router.post('/logout', authController.logout);
 
 module.exports = router;

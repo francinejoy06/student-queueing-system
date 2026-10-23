@@ -1,15 +1,313 @@
-<%- include('../partials/header', { title: 'My queue', active: 'student', currentUser }) %>
-<% if (query.created) { %><div class="alert success" role="status">You joined the queue. Your ticket is listed below.</div><% } %>
+<%- include('../partials/header', {
+  title: 'My queue',
+  active: 'student',
+  currentUser
+}) %>
+
+<% if (query.created) { %>
+  <div class="alert success" role="status">
+    You joined the queue. Your ticket is listed below.
+  </div>
+<% } %>
+
+<% if (query.message) { %>
+  <div class="alert success" role="status">
+    <%= query.message %>
+  </div>
+<% } %>
+
+<% if (query.error) { %>
+  <div class="alert error" role="alert">
+    <%= query.error %>
+  </div>
+<% } %>
+
 <section class="welcome-row">
-  <div><h2>Hello, <%= currentUser.full_name.split(' ')[0] %> 👋</h2><p class="muted">Keep track of your campus service tickets here.</p></div>
-  <a class="button primary" href="/student/queue/add">＋ Join a queue</a>
+  <div>
+    <h2>Hello, <%= currentUser.full_name.split(' ')[0] %> 👋</h2>
+    <p class="muted">
+      Keep track of your campus service tickets here.
+    </p>
+  </div>
+
+  <a class="button primary" href="/student/queue/add">
+    ＋ Join a queue
+  </a>
 </section>
+
 <section class="panel">
-  <div class="panel-heading"><div><h2>Your tickets</h2><p class="muted">Queue requests made with your account</p></div><span class="admin-count"><strong><%= tickets.filter(function (ticket) { return ['waiting', 'serving'].includes(ticket.status); }).length %></strong> active</span></div>
+  <div class="panel-heading">
+    <div>
+      <h2>Your tickets</h2>
+      <p class="muted">Queue requests made with your account</p>
+    </div>
+
+    <span class="admin-count">
+      <strong>
+        <%= tickets.filter(function (ticket) {
+          return ['waiting', 'serving'].includes(ticket.status);
+        }).length %>
+      </strong>
+      active
+    </span>
+  </div>
+
   <% if (tickets.length) { %>
-    <div class="table-wrap"><table><thead><tr><th>TICKET</th><th>SERVICE OFFICE</th><th>PURPOSE</th><th>CREATED</th><th>STATUS</th></tr></thead><tbody>
-      <% tickets.forEach(function (ticket) { %><tr><td><strong class="ticket-number"><%= ticket.ticket_number %></strong></td><td><%= ticket.office_name %></td><td><%= ticket.purpose || '—' %></td><td><%= new Date(ticket.created_at).toLocaleString() %></td><td><span class="status <%= ticket.status %>"><%= ticket.status %></span></td></tr><% }); %>
-    </tbody></table></div>
-  <% } else { %><div class="empty-state"><span>◷</span><strong>No tickets yet</strong><p>Join a service queue when you’re ready.</p><a class="button primary" href="/student/queue/add">Join a queue <span>→</span></a></div><% } %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>TICKET</th>
+            <th>SERVICE OFFICE</th>
+            <th>PURPOSE</th>
+            <th>CREATED</th>
+            <th>STATUS</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% tickets.forEach(function (ticket) { %>
+            <tr>
+              <td>
+                <strong class="ticket-number">
+                  <%= ticket.ticket_number %>
+                </strong>
+              </td>
+
+              <td><%= ticket.office_name %></td>
+
+              <td><%= ticket.purpose || '—' %></td>
+
+              <td>
+                <%= new Date(ticket.created_at).toLocaleString() %>
+              </td>
+
+              <td>
+                <span class="status <%= ticket.status %>">
+                  <%= ticket.status %>
+                </span>
+              </td>
+
+              <td class="row-actions">
+                <% if (ticket.status === 'waiting') { %>
+
+                  <!-- Open the edit-purpose popup -->
+                  <button
+                    class="small-action"
+                    type="button"
+                    onclick="document.getElementById('purpose-dialog-<%= ticket.id %>').showModal()"
+                  >
+                    Edit purpose
+                  </button>
+
+                  <!-- Edit-purpose popup -->
+                  <dialog
+                    id="purpose-dialog-<%= ticket.id %>"
+                    class="purpose-dialog"
+                    aria-labelledby="purpose-title-<%= ticket.id %>"
+                  >
+                    <div class="purpose-dialog-header">
+                      <h3 id="purpose-title-<%= ticket.id %>">
+                        Edit ticket purpose
+                      </h3>
+
+                      <button
+                        class="dialog-close"
+                        type="button"
+                        aria-label="Close dialog"
+                        onclick="document.getElementById('purpose-dialog-<%= ticket.id %>').close()"
+                      >
+                        &times;
+                      </button>
+                    </div>
+
+                    <p class="muted">
+                      Ticket:
+                      <strong><%= ticket.ticket_number %></strong>
+                    </p>
+
+                    <form
+                      method="POST"
+                      action="/student/tickets/<%= ticket.id %>/edit-purpose"
+                    >
+                      <label for="purpose-<%= ticket.id %>">
+                        Service purpose
+                      </label>
+
+                      <textarea
+                        name="purpose"
+                        id="purpose-<%= ticket.id %>"
+                        maxlength="255"
+                        rows="4"
+                        placeholder="What do you need help with?"
+                      ><%= ticket.purpose || '' %></textarea>
+
+                      <div class="dialog-actions">
+                        <button
+                          class="button secondary"
+                          type="button"
+                          onclick="document.getElementById('purpose-dialog-<%= ticket.id %>').close()"
+                        >
+                          Cancel
+                        </button>
+
+                        <button class="button primary" type="submit">
+                          Save changes
+                        </button>
+                      </div>
+                    </form>
+                  </dialog>
+
+                  <!-- Cancel ticket -->
+                  <form
+                    method="POST"
+                    action="/student/tickets/<%= ticket.id %>/cancel"
+                    onsubmit="return confirm('Cancel this queue ticket?')"
+                  >
+                    <button
+                      class="small-action danger-text"
+                      type="submit"
+                    >
+                      Cancel ticket
+                    </button>
+                  </form>
+
+                <% } else { %>
+                  <span class="muted">—</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+  <% } else { %>
+    <div class="empty-state">
+      <span>◷</span>
+      <strong>No tickets yet</strong>
+      <p>Join a service queue when you’re ready.</p>
+
+      <a class="button primary" href="/student/queue/add">
+        Join a queue <span>→</span>
+      </a>
+    </div>
+  <% } %>
 </section>
+
+<style>
+  .purpose-dialog {
+    width: min(400px, calc(100% - 32px));
+    max-width: 400px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 24px;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    color: #1f2937;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
+  }
+
+  .purpose-dialog[open] {
+    animation: purpose-dialog-appear 0.18s ease-out;
+  }
+
+  .purpose-dialog::backdrop {
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(2px);
+  }
+
+  .purpose-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .purpose-dialog-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+
+  .purpose-dialog .muted {
+    margin: 8px 0 16px;
+  }
+
+  .purpose-dialog label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .purpose-dialog textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1f2937;
+    font: inherit;
+    resize: vertical;
+  }
+
+  .purpose-dialog textarea:focus {
+    outline: 2px solid #64748b;
+    outline-offset: 1px;
+  }
+
+  .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .dialog-close {
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .dialog-close:hover {
+    color: #111827;
+  }
+
+  @keyframes purpose-dialog-appear {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .purpose-dialog {
+      padding: 18px;
+    }
+
+    .dialog-actions {
+      flex-direction: column-reverse;
+    }
+
+    .dialog-actions .button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
 <%- include('../partials/footer') %>

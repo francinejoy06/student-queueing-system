@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff Registration - QueueDesk</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="login-page">
+  <div class="login-art">
+    <a class="brand brand-light" href="/login">
+      <span class="brand-mark">Q</span>
+      <span>QueueDesk<small>STAFF SERVICES</small></span>
+    </a>
+
+    <div class="art-copy">
+      <span class="eyebrow light">CAMPUS SERVICE OPERATIONS</span>
+      <h1>Serve better.<br><em>Queue smarter.</em></h1>
+      <p>Create your staff account and manage queues for your assigned office.</p>
+    </div>
+
+    <div class="art-caption">
+      One organized queue, a better campus experience.
+    </div>
+  </div>
+
+  <main class="login-panel">
+    <section class="login-card">
+      <span class="eyebrow">STAFF ACCOUNT</span>
+      <h2>Staff registration</h2>
+      <p class="muted">Register using your school's staff access code.</p>
+
+      <% if (error) { %>
+        <div class="alert error" role="alert"><%= error %></div>
+      <% } %>
+
+      <form method="POST" action="/staff/register" class="form-stack">
+        <label for="full_name">Full name</label>
+        <input
+          id="full_name"
+          name="full_name"
+          type="text"
+          autocomplete="name"
+          maxlength="100"
+          placeholder="Your full name"
+          value="<%= fullName %>"
+          required
+        >
+
+        <label for="email">Email address</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          maxlength="100"
+          placeholder="you@school.edu"
+          value="<%= email %>"
+          required
+        >
+
+        <label for="office_id">Assigned office</label>
+        <select id="office_id" name="office_id" required>
+          <option value="">Select your office</option>
+          <% offices.forEach(function(office) { %>
+            <option
+              value="<%= office.id %>"
+              <%= String(office.id) === String(selectedOfficeId) ? 'selected' : '' %>
+            >
+              <%= office.name %>
+            </option>
+          <% }) %>
+        </select>
+
+        <label for="staff_code">Staff registration code</label>
+        <input
+          id="staff_code"
+          name="staff_code"
+          type="password"
+          autocomplete="off"
+          placeholder="Enter your staff code"
+          required
+        >
+
+        <label for="password">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="new-password"
+          minlength="8"
+          maxlength="72"
+          placeholder="8 or more characters"
+          required
+        >
+
+        <label for="confirm_password">Confirm password</label>
+        <input
+          id="confirm_password"
+          name="confirm_password"
+          type="password"
+          autocomplete="new-password"
+          minlength="8"
+          maxlength="72"
+          placeholder="Enter your password again"
+          required
+        >
+
+        <button class="button primary wide" type="submit">
+          Create staff account <span>→</span>
+        </button>
+      </form>
+
+      <p class="login-help">
+        Already have an account?
+        <a class="text-link" href="/login">Sign in</a>
+      </p>
+      <p class="login-help">
+        Registering as a student?
+        <a class="text-link" href="/signup">Student signup</a>
+      </p>
+    </section>
+
+    <footer class="login-footer">
+      © <%= new Date().getFullYear() %> QueueDesk · Campus service operations
+    </footer>
+  </main>
+</body>
+</html>

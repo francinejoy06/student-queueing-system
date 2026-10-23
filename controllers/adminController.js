@@ -1,20 +1,33 @@
-const bcrypt = require('bcryptjs');
 const adminModel = require('../models/adminModel');
 const userModel = require('../models/userModel');
 
-const ROLES = ['student', 'staff', 'admin'];
-
 // ---------- OFFICES ----------
+
 function officeNameError(name) {
   if (!name) return 'Office name is required.';
-  if (name.length > 100) return 'Office name must be 100 characters or fewer.';
+
+  if (name.length > 100) {
+    return 'Office name must be 100 characters or fewer.';
+  }
+
   return null;
+}
+
+function positiveId(value) {
+  const text = String(value ?? '');
+
+  if (!/^\d+$/.test(text)) return null;
+
+  const id = Number(text);
+
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
 
 async function showOffices(req, res) {
   try {
     const offices = await adminModel.getOffices();
-    res.render('admin/offices', {
+
+    return res.render('admin/offices', {
       offices,
       currentUser: req.session.user,
       message: req.query.message || null,
@@ -22,169 +35,259 @@ async function showOffices(req, res) {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Could not load offices.');
+    return res.status(500).send('Could not load offices.');
   }
 }
 
 async function addOffice(req, res) {
   const name = String(req.body.name || '').trim();
   const problem = officeNameError(name);
-  if (problem) return res.redirect(`/admin/offices?error=${encodeURIComponent(problem)}`);
+
+  if (problem) {
+    return res.redirect(
+      `/admin/offices?error=${encodeURIComponent(problem)}`
+    );
+  }
 
   try {
     if (await adminModel.officeNameExists(name)) {
-      return res.redirect('/admin/offices?error=Office+name+already+exists');
+      return res.redirect(
+        '/admin/offices?error=Office+name+already+exists'
+      );
     }
+
     await adminModel.createOffice(name);
-    res.redirect('/admin/offices?message=Office+added');
+
+    return res.redirect('/admin/offices?message=Office+added');
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
-      return res.redirect('/admin/offices?error=Office+name+already+exists');
+      return res.redirect(
+        '/admin/offices?error=Office+name+already+exists'
+      );
     }
+
     console.error(err);
-    res.status(500).send('Could not add office.');
+    return res.status(500).send('Could not add office.');
   }
 }
 
 async function editOffice(req, res) {
-  const id = Number.parseInt(req.params.id, 10);
-  if (!Number.isInteger(id) || id < 1) return res.status(400).send('Invalid office.');
+  const id = positiveId(req.params.id);
+
+  if (!id) {
+    return res.status(400).send('Invalid office.');
+  }
+
   const name = String(req.body.name || '').trim();
   const problem = officeNameError(name);
-  if (problem) return res.redirect(`/admin/offices?error=${encodeURIComponent(problem)}`);
+
+  if (problem) {
+    return res.redirect(
+      `/admin/offices?error=${encodeURIComponent(problem)}`
+    );
+  }
 
   try {
     if (await adminModel.officeNameExists(name, id)) {
-      return res.redirect('/admin/offices?error=Office+name+already+exists');
+      return res.redirect(
+        '/admin/offices?error=Office+name+already+exists'
+      );
     }
+
     await adminModel.renameOffice(id, name);
-    res.redirect('/admin/offices?message=Office+updated');
+
+    return res.redirect('/admin/offices?message=Office+updated');
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
-      return res.redirect('/admin/offices?error=Office+name+already+exists');
+      return res.redirect(
+        '/admin/offices?error=Office+name+already+exists'
+      );
     }
+
     console.error(err);
-    res.status(500).send('Could not update office.');
+    return res.status(500).send('Could not update office.');
   }
 }
 
-// Offices are deactivated, not deleted, so old tickets stay valid
 async function toggleOffice(req, res) {
-  const id = Number.parseInt(req.params.id, 10);
-  if (!Number.isInteger(id) || id < 1) return res.status(400).send('Invalid office.');
+  const id = positiveId(req.params.id);
+
+  if (!id) {
+    return res.status(400).send('Invalid office.');
+  }
+
   const active = req.body.active === '1';
 
   try {
     await adminModel.setOfficeActive(id, active);
-    res.redirect(`/admin/offices?message=${active ? 'Office+activated' : 'Office+deactivated'}`);
+
+    const message = active
+      ? 'Office+activated'
+      : 'Office+deactivated';
+
+    return res.redirect(`/admin/offices?message=${message}`);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Could not update office.');
+    return res.status(500).send('Could not update office.');
   }
 }
 
 // ---------- USERS ----------
+
 async function showUsers(req, res) {
   try {
-    const users = await userModel.getAll();
-    res.render('admin/users', {
+    const [users, offices] = await Promise.all([
+      userModel.getAll(),
+      adminModel.getOffices(),
+    ]);
+
+    return res.render('admin/users', {
       users,
+      offices,
       currentUser: req.session.user,
       message: req.query.message || null,
       error: req.query.error || null,
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Could not load users.');
+    return res.status(500).send('Could not load users.');
   }
 }
 
+// Account creation is handled by the registration process.
+// Keep this handler so any existing route does not break.
 async function addUser(req, res) {
-  const fullName = String(req.body.full_name || '').trim();
-  const email = String(req.body.email || '').trim().toLowerCase();
-  const password = String(req.body.password || '');
-  const role = String(req.body.role || '');
-  const message = !fullName || fullName.length > 100
-    ? 'Name must be between 1 and 100 characters.'
-    : email.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-      ? 'Enter a valid email address (100 characters or fewer).'
-      : password.length < 8 || Buffer.byteLength(password, 'utf8') > 72
-        ? 'Password must be 8 or more characters and no more than 72 bytes.'
-        : !['staff', 'admin'].includes(role)
-          ? 'Choose a valid role.'
-          : null;
-  if (message) {
-    return res.redirect(`/admin/users?error=${encodeURIComponent(message)}`);
-  }
-
-  try {
-    await userModel.create({
-      fullName,
-      email,
-      passwordHash: await bcrypt.hash(password, 12),
-      role,
-    });
-    res.redirect('/admin/users?message=User+created');
-  } catch (err) {
-    if (err.code === 'ER_DUP_ENTRY') {
-      return res.redirect('/admin/users?error=That+email+is+already+in+use');
-    }
-    console.error(err);
-    res.status(500).send('Could not create user.');
-  }
+  return res.redirect(
+    '/admin/users?error=' +
+    encodeURIComponent(
+      'Account creation must use the appropriate registration process.'
+    )
+  );
 }
 
+// Only the office assignment of an existing staff account can be changed.
+// Names and roles are taken from the database, never from the submitted form.
 async function editUser(req, res) {
-  const id = Number.parseInt(req.params.id, 10);
-  if (!Number.isInteger(id) || id < 1) return res.status(400).send('Invalid user.');
-  const fullName = String(req.body.full_name || '').trim();
-  const role = String(req.body.role || '');
-  const isSelf = id === Number(req.session.user.id);
+  const id = positiveId(req.params.id);
 
-  let problem = null;
-  if (!fullName || fullName.length > 100) problem = 'Name must be between 1 and 100 characters.';
-  else if (!ROLES.includes(role)) problem = 'Choose a valid role.';
-  else if (isSelf && role !== req.session.user.role) problem = 'You cannot change your own role.';
-  if (problem) return res.redirect(`/admin/users?error=${encodeURIComponent(problem)}`);
-
-  try {
-    await adminModel.updateUser(id, fullName, role);
-    if (isSelf) req.session.user.full_name = fullName;
-    res.redirect('/admin/users?message=User+updated');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Could not update user.');
-  }
-}
-
-
-async function deleteUser(req, res) {
-  const id = Number.parseInt(req.params.id, 10);
-  if (!Number.isInteger(id) || id < 1) return res.status(400).send('Invalid user.');
-
-  if (id === Number(req.session.user.id)) {
-    return res.redirect('/admin/users?error=You+cannot+delete+your+own+account');
+  if (!id) {
+    return res.status(400).send('Invalid user.');
   }
 
   try {
-    const deleted = await userModel.remove(id);
-    return res.redirect(`/admin/users?message=${deleted ? 'User+deleted' : 'User+not+found'}`);
-  } catch (err) {
-    if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+    const users = await userModel.getAll();
+    const user = users.find(
+      (item) => Number(item.id) === id
+    );
+
+    if (!user) {
       return res.redirect(
-        '/admin/users?error=' +
-         encodeURIComponent('This user has queue tickets and cannot be deleted.')
+        '/admin/users?error=User+not+found'
       );
     }
 
+    if (user.role !== 'staff') {
+      return res.redirect(
+        '/admin/users?error=' +
+        encodeURIComponent(
+          'Only staff office assignments can be changed here.'
+        )
+      );
+    }
+
+    const officeValue = String(req.body.office_id ?? '').trim();
+    let officeId = null;
+
+    // An empty office selection means the staff member is unassigned.
+    if (officeValue !== '') {
+      officeId = positiveId(officeValue);
+
+      if (!officeId) {
+        return res.redirect(
+          '/admin/users?error=Select+a+valid+office'
+        );
+      }
+
+      const offices = await adminModel.getOffices();
+      const office = offices.find(
+        (item) => Number(item.id) === officeId
+      );
+
+      if (!office) {
+        return res.redirect(
+          '/admin/users?error=Selected+office+not+found'
+        );
+      }
+
+      if (
+        office.is_active !== undefined &&
+        Number(office.is_active) !== 1
+      ) {
+        return res.redirect(
+          '/admin/users?error=Choose+an+active+office'
+        );
+      }
+    }
+
+    // Preserve the existing name and role.
+    // Pass officeId explicitly because the model's default may clear it.
+    await adminModel.updateUser(
+      id,
+      user.full_name,
+      user.role,
+      officeId
+    );
+
+    return res.redirect(
+      '/admin/users?message=Staff+office+assignment+updated'
+    );
+  } catch (err) {
     console.error(err);
+
     return res.redirect(
       '/admin/users?error=' +
-        encodeURIComponent('Could not delete the user.')
+      encodeURIComponent('Could not update the staff office assignment.')
     );
   }
 }
 
+async function deleteUser(req, res) {
+  const id = positiveId(req.params.id);
+
+  if (!id) {
+    return res.status(400).send('Invalid user.');
+  }
+
+  if (id === Number(req.session.user.id)) {
+    return res.redirect(
+      '/admin/users?error=You+cannot+delete+your+own+account'
+    );
+  }
+
+  try {
+    const deleted = await userModel.remove(id);
+
+    return res.redirect(
+      `/admin/users?message=${deleted ? 'User+deleted' : 'User+not+found'}`
+    );
+  } catch (err) {
+    if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.redirect(
+        '/admin/users?error=' +
+        encodeURIComponent(
+          'This user has queue tickets and cannot be deleted.'
+        )
+      );
+    }
+
+    console.error(err);
+
+    return res.redirect(
+      '/admin/users?error=' +
+      encodeURIComponent('Could not delete the user.')
+    );
+  }
+}
 
 module.exports = {
   showOffices,

@@ -1,16 +1,163 @@
-<%- include('../partials/header', { title: ticket ? 'Edit ticket' : 'Add queue ticket', active: 'queue', currentUser }) %>
+<%- include('../partials/header', {
+  title: ticket ? 'Edit ticket' : 'Add queue ticket',
+  active: 'queue',
+  currentUser
+}) %>
+
 <section class="form-panel">
   <a class="back-link" href="/staff/queue">← Back to queue</a>
-  <div class="form-title"><span class="eyebrow">QUEUE MANAGEMENT</span><h2><%= ticket ? 'Update ticket details' : 'Create a queue ticket' %></h2><p class="muted"><%= ticket ? 'Only waiting tickets can be edited.' : 'Add a student to a service office queue.' %></p></div>
-  <% if (error) { %><div class="alert error" role="alert"><%= error %></div><% } %>
-  <form method="POST" action="<%= ticket ? `/staff/queue/${ticket.id}/edit` : '/staff/queue/add' %>" class="form-stack">
-    <label for="student_id">Student</label>
-    <select name="student_id" id="student_id" required><option value="">Choose a student</option><% students.forEach(function (student) { %><option value="<%= student.id %>" <%= String((values && values.student_id) || (ticket && ticket.student_id) || '') === String(student.id) ? 'selected' : '' %>><%= student.full_name %> · <%= student.email %></option><% }); %></select>
-    <label for="office_id">Service office</label>
-    <select name="office_id" id="office_id" required><% offices.forEach(function (office) { %><option value="<%= office.id %>" <%= String((values && values.office_id) || (ticket && ticket.office_id) || (!ticket && offices[0].id)) === String(office.id) ? 'selected' : '' %>><%= office.name %></option><% }); %></select>
-    <label for="purpose">Service purpose <span class="optional">OPTIONAL</span></label>
-    <textarea name="purpose" id="purpose" maxlength="255" rows="4" placeholder="What does the student need help with?"><%= values && typeof values.purpose === 'string' ? values.purpose : ticket ? ticket.purpose || '' : '' %></textarea>
-    <div class="form-actions"><a class="button secondary" href="/staff/queue">Cancel</a><button class="button primary" type="submit"><%= ticket ? 'Save changes' : 'Add to queue' %> <span>→</span></button></div>
+
+  <div class="form-title">
+    <span class="eyebrow">QUEUE MANAGEMENT</span>
+
+    <h2>
+      <%= ticket ? 'Update ticket details' : 'Create a queue ticket' %>
+    </h2>
+
+    <p class="muted">
+      <%= ticket
+        ? 'Only waiting tickets can be edited.'
+        : 'Add a student to a service office queue.' %>
+    </p>
+  </div>
+
+  <% if (error) { %>
+    <div class="alert error" role="alert">
+      <%= error %>
+    </div>
+  <% } %>
+
+  <form
+    method="POST"
+    action="<%= ticket
+      ? `/staff/queue/${ticket.id}/edit`
+      : '/staff/queue/add' %>"
+    class="form-stack"
+  >
+
+    <!-- STUDENT -->
+    <% if (ticket && currentUser.role !== 'admin') { %>
+
+      <% const selectedStudent = students.find(
+        student => Number(student.id) === Number(ticket.student_id)
+      ); %>
+
+      <label>Student</label>
+
+      <p class="muted">
+        <%= selectedStudent
+          ? `${selectedStudent.full_name} · ${selectedStudent.email}`
+          : 'Student information unavailable' %>
+      </p>
+
+      <input
+        type="hidden"
+        name="student_id"
+        value="<%= ticket.student_id %>"
+      >
+
+    <% } else { %>
+
+      <label for="student_id">Student</label>
+
+      <select name="student_id" id="student_id" required>
+        <option value="">Choose a student</option>
+
+        <% students.forEach(function (student) { %>
+          <option
+            value="<%= student.id %>"
+            <%= String(
+              (values && values.student_id) ||
+              (ticket && ticket.student_id) ||
+              ''
+            ) === String(student.id) ? 'selected' : '' %>
+          >
+            <%= student.full_name %> · <%= student.email %>
+          </option>
+        <% }); %>
+      </select>
+
+    <% } %>
+
+
+    <!-- SERVICE OFFICE -->
+    <% if (ticket && currentUser.role !== 'admin') { %>
+
+      <% const selectedOffice = offices.find(
+        office => Number(office.id) === Number(ticket.office_id)
+      ); %>
+
+      <label>Service office</label>
+
+      <p class="muted">
+        <%= selectedOffice
+          ? selectedOffice.name
+          : 'Assigned office' %>
+      </p>
+
+      <input
+        type="hidden"
+        name="office_id"
+        value="<%= currentUser.office_id %>"
+      >
+
+    <% } else { %>
+
+      <label for="office_id">Service office</label>
+
+      <select name="office_id" id="office_id" required>
+
+        <% offices.forEach(function (office) { %>
+          <option
+            value="<%= office.id %>"
+            <%= String(
+              (values && values.office_id) ||
+              (ticket && ticket.office_id) ||
+              (!ticket && offices[0] && offices[0].id) ||
+              ''
+            ) === String(office.id) ? 'selected' : '' %>
+          >
+            <%= office.name %>
+          </option>
+        <% }); %>
+
+      </select>
+
+    <% } %>
+
+
+    <!-- SERVICE PURPOSE -->
+    <label for="purpose">
+      Service purpose
+      <span class="optional">OPTIONAL</span>
+    </label>
+
+    <textarea
+      name="purpose"
+      id="purpose"
+      maxlength="255"
+      rows="4"
+      placeholder="What does the student need help with?"
+    ><%= values && typeof values.purpose === 'string'
+      ? values.purpose
+      : ticket
+        ? ticket.purpose || ''
+        : '' %></textarea>
+
+
+    <!-- FORM ACTIONS -->
+    <div class="form-actions">
+      <a class="button secondary" href="/staff/queue">
+        Cancel
+      </a>
+
+      <button class="button primary" type="submit">
+        <%= ticket ? 'Save changes' : 'Add to queue' %>
+        <span>→</span>
+      </button>
+    </div>
+
   </form>
 </section>
+
 <%- include('../partials/footer') %>

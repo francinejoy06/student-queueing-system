@@ -1,3 +1,4 @@
+
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 
@@ -5,6 +6,13 @@ const bcrypt = require('bcryptjs');
 async function getOffices() {
   const [rows] = await pool.query(
     'SELECT id, name, is_active FROM offices ORDER BY name'
+  );
+  return rows;
+}
+
+async function getActiveOffices() {
+  const [rows] = await pool.query(
+    'SELECT id, name FROM offices WHERE is_active = 1 ORDER BY name'
   );
   return rows;
 }
@@ -28,31 +36,48 @@ async function renameOffice(id, name) {
 
 // Soft delete: offices are not deleted so old tickets stay valid
 async function setOfficeActive(id, active) {
-  await pool.query('UPDATE offices SET is_active = ? WHERE id = ?', [active, id]);
+  await pool.query('UPDATE offices SET is_active = ? WHERE id = ?', [
+    active,
+    id,
+  ]);
 }
 
 // ---------- USERS ----------
 async function getUsers() {
   const [rows] = await pool.query(
-    'SELECT id, full_name, email, role, created_at FROM users ORDER BY id'
+    `SELECT
+       u.id,
+       u.full_name,
+       u.email,
+       u.role,
+       u.office_id,
+       o.name AS office_name,
+       u.created_at
+     FROM users u
+     LEFT JOIN offices o ON o.id = u.office_id
+     ORDER BY u.id`
   );
   return rows;
 }
 
-async function createUser(fullName, email, password, role) {
+async function createUser(fullName, email, password, role, officeId = null) {
   const hash = await bcrypt.hash(password, 10);
+
   await pool.query(
-    'INSERT INTO users (full_name, email, password_hash, role) VALUES (?, ?, ?, ?)',
-    [fullName, email, hash, role]
+    `INSERT INTO users
+       (full_name, email, password_hash, role, office_id)
+     VALUES (?, ?, ?, ?, ?)`,
+    [fullName, email, hash, role, officeId]
   );
 }
 
-async function updateUser(id, fullName, role) {
-  await pool.query('UPDATE users SET full_name = ?, role = ? WHERE id = ?', [
-    fullName,
-    role,
-    id,
-  ]);
+async function updateUser(id, fullName, role, officeId = null) {
+  await pool.query(
+    `UPDATE users
+     SET full_name = ?, role = ?, office_id = ?
+     WHERE id = ?`,
+    [fullName, role, officeId, id]
+  );
 }
 
 async function deleteUser(id) {
@@ -61,6 +86,7 @@ async function deleteUser(id) {
 
 module.exports = {
   getOffices,
+  getActiveOffices,
   officeNameExists,
   createOffice,
   renameOffice,
