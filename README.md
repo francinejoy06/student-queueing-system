@@ -19,17 +19,17 @@ The system manages student queue tickets and provides different functions based 
 ## 4. Features
 
 - User registration and login for students and staff
-- Staff select the office they belong to when they register
+- Staff registration requires a registration code and the selection of an assigned office
 - Password hashing using `bcryptjs`
 - Session management and logout
 - Role-based access for students, staff, and administrators
 - Student dashboard and queue ticket requests
-- Students can cancel their own queue ticket
-- Separate ticket numbering for each office, with its own letter prefix (tracked in `office_ticket_counters`)
+- Students can edit the purpose of their own ticket or cancel it, only while the ticket is `waiting`
+- Separate ticket numbering for each office, with its own letter prefix (R for Registrar, C for Cashier, G for Guidance Office, L for Library, A for Admission Office), tracked in `office_ticket_counters`
 - Staff dashboard showing the queue of the staff member's assigned office (call next, complete, skip)
-- Staff can edit the purpose of a queue ticket
+- Staff can edit the purpose of a ticket, but only for tickets of their own office
 - Administrator office management (add offices)
-- Administrator user management: assign or move a staff member to a different office, and delete users
+- Administrator user management: assign or move a staff member to a different office, and delete users who have no tickets
 - Input validation with error messages on all forms
 
 ## 5. Technologies
@@ -72,11 +72,13 @@ The system manages student queue tickets and provides different functions based 
    DB_PASSWORD=
    DB_NAME=queueing_system
    SESSION_SECRET=your_local_session_secret
+   STAFF_REGISTRATION_CODE=your_staff_code
    ```
 
 3. `DB_NAME` must match the database name created by `db/schema.sql`.
-4. Use a strong, private session secret.
-5. Do not upload your actual `.env` file or private credentials to GitHub.
+4. `STAFF_REGISTRATION_CODE` is the code a person must enter to register as staff. [Use the actual variable name from the code.]
+5. Use a strong, private session secret.
+6. Do not upload your actual `.env` file or private credentials to GitHub.
 
 ## 8. Database Setup
 
@@ -91,7 +93,7 @@ The schema creates the database and the following tables:
 - `office_ticket_counters` — the last ticket number used by each office. Each office has its own row, so numbering is separate per office.
 - `queue_tickets` — student queue tickets and their statuses (`waiting`, `serving`, `completed`, `skipped`, `cancelled`). A cancelled ticket keeps its record with the status `cancelled`.
 
-Default offices: Registrar, Cashier, Guidance Office, Library. Administrators can add more offices from the admin pages.
+Default offices: Registrar, Cashier, Guidance Office, Library. Administrators can add more offices (for example, the Admission Office) from the admin pages.
 
 4. Make sure the database settings in your `.env` file match your MySQL configuration.
 
@@ -126,9 +128,11 @@ Sample accounts are created by `node scripts/seed.js`:
 
 **Registration and permissions:**
 
-- **Students** register from the registration page. They can request queue tickets, view their own tickets, and cancel their own tickets.
-- **Staff** register from the registration page and choose the office they are assigned to. They manage only the queue of that office and can edit the purpose of a ticket. They cannot edit user accounts.
-- **Administrators** are created by the seed script. They can add offices, assign or move a staff member to another office, and delete users. They cannot add users or edit user details such as name and role.
+- **Students** register from the registration page. They can request queue tickets, view their own tickets, and edit the purpose or cancel their own ticket only while it is `waiting`. They cannot change tickets that are `serving`, `completed`, or `skipped`.
+- **Staff** register from the staff registration page. They must enter the staff registration code and choose the office they are assigned to. They manage only the queue of that office: they can call the next ticket, mark a ticket as completed or skipped, and edit the purpose of tickets of their own office. They cannot manage tickets of another office and cannot edit user accounts.
+- **Administrators** are created by the seed script. They can add offices, assign or move a staff member to another office, and delete users who have no tickets. A student who already has tickets cannot be deleted. They cannot add users or edit user details such as name and role.
+
+**Reminder:** These sample credentials are for development and testing only. Do not use them for real accounts or production deployment.
 
 The seed script uses `bcryptjs` to hash passwords before storing them in the database. Existing accounts with the same email may not be updated when the script runs again.
 
@@ -178,11 +182,14 @@ student-queueing-system/
 ├── LICENSE
 └── README.md
 ```
+
 ## 12. Known Limitations
 
 - Administrators can only add offices. They cannot rename, deactivate, or delete offices.
 - Administrators cannot add or edit users. They can only move a staff member to another office or delete a user.
-- Anyone can register as staff and choose an office. There is no approval step from an administrator.
+- A student who already has queue tickets cannot be deleted by an administrator, because the tickets must stay in the database. There is no option to archive or deactivate such accounts.
+- A ticket can only be edited or cancelled while it is `waiting`. Once it is `serving`, `completed`, or `skipped`, the student cannot change it.
+- Staff registration is protected only by a shared registration code. There is no individual approval step from an administrator.
 - Administrator accounts can only be created by the seed script.
 - There is no password reset or change password feature.
 - Testing was done manually using the test plan in `docs/test-plan.md`. There are no automated tests.
