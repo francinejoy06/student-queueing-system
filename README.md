@@ -185,7 +185,6 @@ student-queueing-system/
 
 ## 12. Known Limitations
 
-- Administrators can only add offices. They cannot rename, deactivate, or delete offices.
 - Administrators cannot add or edit users. They can only move a staff member to another office or delete a user.
 - A student who already has queue tickets cannot be deleted by an administrator, because the tickets must stay in the database. There is no option to archive or deactivate such accounts.
 - A ticket can only be edited or cancelled while it is `waiting`. Once it is `serving`, `completed`, or `skipped`, the student cannot change it.
